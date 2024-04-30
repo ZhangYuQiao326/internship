@@ -1,0 +1,28 @@
+<mxfile host="Electron" modified="2024-04-26T03:56:25.027Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.2.5 Chrome/120.0.6099.109 Electron/28.1.0 Safari/537.36" etag="Xr-0AR1sDwKCtbxPYGMK" version="24.2.5" type="device">
+  <diagram name="第 1 页" id="XMFvxXQEvlXhHtNk-I-A">
+    <mxGraphModel dx="1194" dy="691" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="b6Y2FkwLLtKDUg33qdHM-2" value="" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="27" y="143" width="648" height="370" as="geometry" />
+        </mxCell>
+        <mxCell id="b6Y2FkwLLtKDUg33qdHM-3" value="帧类型" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="64" y="186" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="b6Y2FkwLLtKDUg33qdHM-4" value="设备所在位置" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="291" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="b6Y2FkwLLtKDUg33qdHM-6" value="数据类型" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="57" y="389" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="b6Y2FkwLLtKDUg33qdHM-7" value="内容" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="223" y="389" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="b6Y2FkwLLtKDUg33qdHM-8" value="发送" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="500" y="274" width="120" height="60" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
