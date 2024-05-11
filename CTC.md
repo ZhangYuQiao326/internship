@@ -109,6 +109,19 @@ int main() {
 
 
 
+# windowsAPI
+
+| API                            | 功能     |
+| ------------------------------ | -------- |
+| `PostQueuedCompletionStatus()` |          |
+| `abort()`                      | 程序退出 |
+| ``                             |          |
+| ``                             |          |
+| ``                             |          |
+| ``                             |          |
+
+
+
 ```cpp
 // loop_request.h
 #define REQUEST_POST(_req, _loop)                                                  \
@@ -174,3 +187,10 @@ typedef struct _OVERLAPPED {
 } OVERLAPPED, *LPOVERLAPPED;
 ```
 
+
+
+
+
+下周任务：仔细阅读LoopWork剩余部分代码
+
+以及：co_worker的所有代码
