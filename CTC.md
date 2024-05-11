@@ -107,3 +107,70 @@ int main() {
 
 <img src="https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202405060924463.png" alt="image-20240506092411289" style="zoom:33%;" />
 
+
+
+```cpp
+// loop_request.h
+#define REQUEST_POST(_req, _loop)                                                  \
+    do                                                                             \
+    {                                                                              \
+        if (!PostQueuedCompletionStatus((_loop)->iocp, 0, 0, &(_req)->overlapped)) \
+        {                                                                          \
+            abort();                                                               \
+        }                                                                          \
+    } while (0)
+```
+
+`PostQueuedCompletionStatus` 函数是 Windows API 中用于向 I/O 完成端口（IOCP）投递完成状态的函数。其原型为：
+
+```c
+BOOL PostQueuedCompletionStatus(
+  HANDLE       CompletionPort,
+  DWORD        dwNumberOfBytesTransferred,
+  ULONG_PTR    dwCompletionKey,
+  LPOVERLAPPED lpOverlapped
+);
+```
+
+- `CompletionPort` 
+- 指定了一个已经创建的 IOCP 的句柄，它是一个操作系统提供的对象，用于管理异步 I/O 完成状态的通知。
+- 当某个异步 I/O 操作完成时，操作系统会将完成状态投递到指定的 IOCP 中，以便应用程序可以通过监听该 IOCP 来获取相关的完成状态并进行处理。
+- `dwNumberOfBytesTransferred` 参数表示已经成功传输的字节数。对于某些操作，它可能不适用，可以将其设置为 0。
+- `dwCompletionKey` 参数是一个用户定义的键值，它在投递完成状态时与完成状态一起传递。可以用它来标识完成状态的来源。可以设置为0
+- `lpOverlapped` 参数是一个指向 OVERLAPPED 结构的指针，该结构包含了异步操作的相关信息。
+
+`PostQueuedCompletionStatus` 的作用是将指定的完成状态异步地投递到指定的 IOCP 中，以便在异步操作完成时通知相关的线程。
+
+### 2. abort 函数
+
+`abort` 函数是 C 标准库中的一个函数，其原型为：
+
+```c
+void abort(void);
+```
+
+`abort` 函数的作用是立即终止当前程序的执行。当调用 `abort` 函数时，程序会立即退出，并且不会执行后续的代码。
+
+```cpp
+typedef struct _OVERLAPPED {
+    // 这两个字段用于存储操作系统内部使用的数据
+    ULONG_PTR Internal;
+    ULONG_PTR InternalHigh;
+    union {
+        // 文件偏移量
+        // 指定从文件中读取或写入数据的位置。
+        struct {
+            DWORD Offset;
+            DWORD OffsetHigh;
+        } DUMMYSTRUCTNAME;
+        // 发起异步 I/O 操作时传递额外的数据给操作系统
+        PVOID Pointer;
+    } DUMMYUNIONNAME;
+
+    // 在异步 I/O 操作中，应用程序可以选择等待一个事件以便在操作完成时得到通知。
+    // 操作系统会在操作完成时将该事件设置为有信号状态。
+    // 如果应用程序不需要等待操作完成，可以将该字段设置为 NULL。
+    HANDLE  hEvent;
+} OVERLAPPED, *LPOVERLAPPED;
+```
+
