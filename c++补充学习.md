@@ -12,7 +12,42 @@
 | `value()`                 | 不为空时获取元素          |
 | `value_or()`              | 获取value或者默认值       |
 
+## 2 std::apply
 
+`std::apply` 是 C++17 中引入的一个函数模板，位于 `<tuple>` 头文件中。它的作用是将一个函数对象和一个元组中的参数进行绑定，并调用该函数对象
+
+```cpp
+#include <iostream>
+#include <tuple>
+#include <functional>
+
+// 一个接受三个参数的函数对象
+// 重载了operator()
+struct Adder {
+    int operator()(int a, int b, int c) const {
+        return a + b + c;
+    }
+};
+
+int main() {
+    Adder adder; // 创建一个函数对象
+
+    std::tuple<int, int, int> args(1, 2, 3); // 创建一个包含三个参数的元组
+
+    // 使用 std::apply 将函数对象和参数元组绑定，并调用函数对象
+    int result = std::apply(adder, args);
+
+    std::cout << "Result: " << result << std::endl; // 输出结果：1 + 2 + 3 = 6
+
+    return 0;
+}
+```
+
+在这个例子中，`Adder` 是一个函数对象，它重载了圆括号运算符，接受三个整型参数并返回它们的和。在 `main` 函数中，首先创建了一个 `Adder` 对象 `adder`，然后创建了一个包含三个整型参数的 `std::tuple` 对象 `args`。
+
+接着，通过 `std::apply(adder, args)` 将函数对象和参数元组绑定，并调用函数对象。`std::apply` 会将参数元组中的参数解包并传递给函数对象，最后返回函数对象的结果，这个结果被赋值给 `result`。
+
+在这个例子中，`std::apply` 将参数元组 `(1, 2, 3)` 中的参数分别传递给函数对象 `adder`，得到的结果就是这三个参数的和，即 6。
 
 ### 1.1 创建对象
 
@@ -109,12 +144,12 @@ int main() {
 
 # 标准库补充
 
-| `std::`            | exp                                      |
-| ------------------ | ---------------------------------------- |
-| `std::conditional` | 提供了在编译时根据条件选择类型           |
-| `std::is_void`     | 在编译时判断给定的类型是否是 `void` 类型 |
-| ``                 |                                          |
-| ``                 |                                          |
+| `std::`                             | exp                                      |
+| ----------------------------------- | ---------------------------------------- |
+| `std::conditional_t`                | 提供了在编译时根据条件选择类型           |
+| `std::is_void`                      | 在编译时判断给定的类型是否是 `void` 类型 |
+| `std::thread::hardware_concurrency` | 获取电脑支持的最大线程数                 |
+| ``                                  |                                          |
 
 * `std::conditional`
 
@@ -146,6 +181,12 @@ int main() {
     return 0;
 }
 
+```
+
+* `std::thread::hardware_concurrency`
+
+```cpp
+uint32_t threadSize = std::thread::hardware_concurrency();
 ```
 
 
