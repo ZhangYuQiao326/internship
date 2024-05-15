@@ -1,0 +1,56 @@
+<div id="article_content" class="article_content clearfix">
+        <link rel="stylesheet" href="https://csdnimg.cn/release/blogv2/dist/mdeditor/css/editerView/kdoc_html_views-1a98987dfd.css">
+        <link rel="stylesheet" href="https://csdnimg.cn/release/blogv2/dist/mdeditor/css/editerView/ck_htmledit_views-044f2cf1dc.css">
+                <div id="content_views" class="htmledit_views">
+                    <h2><a name="t0"></a>解释一下 Qt 的版本号</h2> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;比如 5.15.2&nbsp;是完整的 Qt 版本号，第一个数字 5 是大版本号（major），第二个数字 15&nbsp;是小版本号（minor），第三个数字 2&nbsp;是补丁号（patch）。 只要前面两个数字相同，Qt 的特性就是一致的，最后的数字是对该版本的补丁更新。</p> 
+<h2><a name="t1"></a>&nbsp;<a href="https://so.csdn.net/so/search?q=%E5%AE%89%E8%A3%85%E5%8C%85&amp;spm=1001.2101.3001.7020" target="_blank" class="hl hl-1" data-report-click="{&quot;spm&quot;:&quot;1001.2101.3001.7020&quot;,&quot;dest&quot;:&quot;https://so.csdn.net/so/search?q=%E5%AE%89%E8%A3%85%E5%8C%85&amp;spm=1001.2101.3001.7020&quot;,&quot;extra&quot;:&quot;{\&quot;searchword\&quot;:\&quot;安装包\&quot;}&quot;}" data-tit="安装包" data-pretit="安装包">安装包</a>下载</h2> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Qt 5.15 之后已经不提供离线安装包了，所以只能用在线安装包。官网下载比较慢，可以在<a class="link-info" href="https://mirrors.tuna.tsinghua.edu.cn/qt/" rel="nofollow" title="清华镜像源">清华镜像源</a>下载在线安装包。</p> 
+<p>打开<a class="link-info" href="https://mirrors.tuna.tsinghua.edu.cn/qt/" rel="nofollow" title="链接">链接</a>界面如下：</p> 
+<p><img alt="" height="717" src="https://img-blog.csdnimg.cn/639941e204d44bc4b9fb7e9d1210beee.png" width="1200"></p> 
+<p>点击<strong><a href="https://mirrors.tuna.tsinghua.edu.cn/qt/official_releases/" rel="nofollow" title="official_releases/">official_releases/</a></strong></p> 
+<p><img alt="" height="730" src="https://img-blog.csdnimg.cn/1f76aba334804a80be639c03e5238fb0.png" width="1200">&nbsp;</p> 
+<div class="table-box"><table><thead><tr><th>项目</th><th>说明</th></tr></thead><tbody><tr><td>snapshots</td><td>预览版，最新的开发测试中的 Qt 库和开发工具。</td></tr><tr><td>online</td><td>Qt 在线安装源。</td></tr><tr><td>official_releases</td><td>正式发布版，是与开发版相对的稳定版 Qt 库和开发工具（可以下载Qt开发环境和源代码）</td></tr><tr><td>ministro</td><td>迷你版，目前是针对 Android 的版本。</td></tr><tr><td>learning</td><td>有学习 Qt 的文档教程和示范视频。</td></tr><tr><td>development_releases</td><td>开发版，有新的和旧的不稳定版本，在 Qt 开发过程中的非正式版本。</td></tr><tr><td>community_releases</td><td>社区定制的 Qt 库，Tizen 版 Qt 以及 Qt 附加源码包。</td></tr><tr><td>archive</td><td>各种 Qt 开发工具安装包，新旧都有（可以下载 Qt 开发环境和源代码）。</td></tr></tbody></table></div> 
+<p>点击<a href="https://mirrors.tuna.tsinghua.edu.cn/qt/official_releases/online_installers/" rel="nofollow" title="online_installers/">online_installers/</a></p> 
+<p><img alt="" height="405" src="https://img-blog.csdnimg.cn/dfe31295c9de4a4f901d2b7240513d36.png" width="1200"></p> 
+<p>&nbsp;点击<a href="https://mirrors.tuna.tsinghua.edu.cn/qt/official_releases/online_installers/qt-unified-windows-x64-online.exe" rel="nofollow" title="qt-unified-windows-x64-online.exe">qt-unified-windows-x64-online.exe</a>进行下载。</p> 
+<h2><a name="t2"></a>在线安装</h2> 
+<p>1、<a href="https://so.csdn.net/so/search?q=%E6%89%93%E5%BC%80cmd&amp;spm=1001.2101.3001.7020" target="_blank" class="hl hl-1" data-report-click="{&quot;spm&quot;:&quot;1001.2101.3001.7020&quot;,&quot;dest&quot;:&quot;https://so.csdn.net/so/search?q=%E6%89%93%E5%BC%80cmd&amp;spm=1001.2101.3001.7020&quot;,&quot;extra&quot;:&quot;{\&quot;searchword\&quot;:\&quot;打开cmd\&quot;}&quot;}" data-tit="打开cmd" data-pretit="打开cmd">打开cmd</a>窗口并定位到安装包所在路径，输入下面指令：</p> 
+<pre data-index="0" class="set-code-show" name="code"><code class="language-bash hljs">.\qt-unified-windows-x64-online.exe --mirror https://mirrors.ustc.edu.cn/qtproject</code><div class="hljs-button {2}" data-title="复制" onclick="hljs.copyCode(event)"></div></pre> 
+<p><img alt="" height="192" src="https://img-blog.csdnimg.cn/ab6343d7d1fd47758eee8c9dc445e625.png" width="877"></p> 
+<p>这个步骤是为了后面安装时使用国内的镜像源，如果用国外的源，速度惊人。</p> 
+<p>2、打开下面的窗口，如果有QT账号，可以登录。</p> 
+<p><img alt="" height="639" src="https://img-blog.csdnimg.cn/7b6c17a88988428f87281dfe0ae67980.png" width="952"></p> 
+<p>&nbsp;3、接受开源，选择个体使用（非商用）</p> 
+<p><img alt="" height="639" src="https://img-blog.csdnimg.cn/ecbd198dcf144c4abc0ba171b1adba8f.png" width="952"></p> 
+<p>&nbsp;4、直接Next</p> 
+<p><img alt="" height="639" src="https://img-blog.csdnimg.cn/becc54b73cec4d629141de63f86dd768.png" width="952"></p> 
+<p>&nbsp;5、随便选择一个</p> 
+<p><img alt="" height="641" src="https://img-blog.csdnimg.cn/f7d2c4b91aca44969870f9510d3f1e98.png" width="952"></p> 
+<p>&nbsp;6、&nbsp;<span style="color:#000000;">更改安装路径，自定义安装包</span></p> 
+<p><img alt="" height="639" src="https://img-blog.csdnimg.cn/5066e92bd27746debb56bd1aa5b37390.png" width="952"></p> 
+<p>&nbsp;7、根据需要选择Qt5.15.2里面的组件，不建议全选，一般选择MinGW xxx， Qt xxx就可以了，后面有需要再安装。</p> 
+<p><img alt="" height="1024" src="https://img-blog.csdnimg.cn/385b64bad89546eda42ab338661f9b9f.png" width="1106"></p> 
+<p><strong>编译环境</strong>&nbsp;</p> 
+<div class="table-box"><table><thead><tr><th>组件</th><th>说明</th></tr></thead><tbody><tr><td>MSVC ***</td><td>针对 Windows 平台上的 MSVC 编译器的 Qt 组件，如 msvc2019 32-bit 和 msvc2019 64-bit 等。安装该组件需要计算机上已经安装相应版本的 Visual Studio。</td></tr><tr><td>MinGW ***</td><td>编译器模块。MinGW 是 Minimalist GNU for Windows 的缩写，MinGW 是 Windows 平台上使用的 GNU 工具集导入库的集合。</td></tr><tr><td>UWP ***</td><td>WP 是 Windows 10 中 Universal Windows Platform 的简称，有不同编译器类型的 UWP，属于 MSVC 编译器生成的 Qt 库。如果不是开发 UWP 应用程序，就不需要，直接忽略。</td></tr><tr><td>Android ***</td><td>这是针对安卓应用开发的 Qt 库，一般情况下用不到</td></tr><tr><td>Sources</td><td>Qt 的源代码包，除非你想阅读 Qt 的源码，否则不用安装。&nbsp;</td></tr><tr><td>Qt ***</td><td>Qt 的附加模块，这些附加模块括号里的 TP 是指 Technology Preview ，技术预览模块的意思，还处在功能测试阶段，不是正式版模块；附加模块括号里的 Deprecated 是指抛弃的旧模块，兼容旧代码使用的，一般用不到(如果不是为和以前开发的源程序兼容，过时的模块不要选择)。</td></tr></tbody></table></div> 
+<p><strong>Qt第三方库/功能模块&nbsp;</strong></p> 
+<div class="table-box"><table border="1" cellpadding="1" cellspacing="1"><tbody><tr><td>模块名称</td><td>模块功能</td></tr><tr><td>Qt Charts</td><td>二维图表模块，用于绘制柱状图、饼图、曲线图等常用二维图表。</td></tr><tr><td>Qt Quick 3D</td><td>提供了即将推出的Qt Quick高级3D API的技术预览。</td></tr><tr><td>Qt Data Visualization</td><td>数据可视化模块，提供了一种在3D中可视化数据的方法。存在用于显示条形图、散布图、表面图和操纵3D场景的方法的C++类和QML类型。此外，图形可以完全自定义不同的主题。</td></tr><tr><td>Qt Lottie Animation</td><td>提供了一个用于渲染图形和动画的QML API，这些图形和动画由Adobe After Effects的Bodymovin插件以JSON格式导出。</td></tr><tr><td>Qt Purchasing</td><td>用于在Android、iOS和macOS上处理应用程序内购买的跨平台API。</td></tr><tr><td>Qt Virtual Keyboard</td><td>虚拟键盘，可以使用自己的布局和样式对其进行扩展。</td></tr><tr><td>Qt WebEngine</td><td>将快速移动的Chromium web平台集成到Qt中，并为Qt小部件和Qt Quick提供方便的API，以利用Chromium的web功能。Qt WebEngine充分利用了整个Qt图形堆栈集成，允许本地Qt控件与web内容和OpenGL着色器无缝混合和叠加。在Windows上，该模块仅在MSVC 2017或MSVC2019下可用。</td></tr><tr><td>Qt Network Authorization</td><td>是一个附加库，使Qt应用程序能够使用不同的web身份验证系统。</td></tr><tr><td>Qt-WebGL</td><td>流媒体插件是一个Qt平台抽象插件，它通过网络向支持WebGL的浏览器提供Qt-Quick和Qt-OpenGL应用程序的流媒体。</td></tr><tr><td>Qt Script</td><td>Qt脚本，已弃用。</td></tr><tr><td>Qt Quick Timeline</td><td>支持基于关键帧的动画和参数化。它采用了一种工具友好的方法，因此受到Qt Design Studio和Qt Quick Designer的直接支持，其中包含用于创建基于关键帧的动画的时间轴编辑器。</td></tr></tbody></table></div> 
+<p><strong><span style="color:#1a439c;">“Tools”分类下</span></strong>的开发组件（默认安装即可，无需选择）</p> 
+<div class="table-box"><table><thead><tr><th>组件</th><th>说明</th></tr></thead><tbody><tr><td>Qt Creator xxx</td><td>这是集成开发环境，强制安装的，以后所有的项目和代码都在 Qt Creator 里面新建和编辑。</td></tr><tr><td>Qt Creator xxxx CDB Debugger surpport</td><td>用于和 CDB 调试工具对接，默认安装，一般用于调试 VC 编译的 Qt 程序。</td></tr><tr><td>MinGW xxxxx</td><td>这是开源的编译器套件，建议安装</td></tr><tr><td>Strawberry Perl 5.22.1.3</td><td>用于编译 Qt 源代码的 Perl 开发环境，不需要安装。如果读者以后用到，也可以另外手动安装，在搜索引擎搜索 Strawberry Perl 关键词，去 Strawberry Perl 官网下载最新的安装包是一样用的。</td></tr></tbody></table></div> 
+<p>&nbsp;8、勾选后Next</p> 
+<p><img alt="" height="1024" src="https://img-blog.csdnimg.cn/3cb19d11664e4faebc4584b1f0b0315c.png" width="1106"></p> 
+<p>&nbsp;9、设置名称</p> 
+<p><img alt="" height="1024" src="https://img-blog.csdnimg.cn/a839c06da95845268e14fc9de462f887.png" width="1106"></p> 
+<p>&nbsp;10、<span style="color:#000000;">Install即可</span></p> 
+<p><img alt="" height="1024" src="https://img-blog.csdnimg.cn/580be23965cb4f8299ed110f5dd69e58.png" width="1106"></p> 
+<p>&nbsp;由于最开始切换到了国内的镜像源，安装速度很快</p> 
+<p><img alt="" height="1024" src="https://img-blog.csdnimg.cn/d5fbc8cbddcd4f02b03ad8072210ad18.png" width="1106"></p> 
+<p>&nbsp;<img alt="" height="903" src="https://img-blog.csdnimg.cn/7cf413f72ca74271b5784470aee132ce.png" width="952"></p> 
+<p>&nbsp;<img alt="" height="903" src="https://img-blog.csdnimg.cn/7a11b00681d248a6b2b86a93e7c65e7d.png" width="952"></p> 
+<p>&nbsp;安装完成之后，在 Windows“开始”菜单中会看到 Qt 的 程序组。</p> 
+<p><img alt="" height="615" src="https://img-blog.csdnimg.cn/d2d5f69929f04b14927f4bcbf705b745.png" width="324"></p> 
+<div class="table-box"><table><thead><tr><th>程序</th><th>说明</th></tr></thead><tbody><tr><td>Assistant（Qt 助手）</td><td>用来查看帮助文档，已被集成在 Qt Creator 中。</td></tr><tr><td>Designer（Qt 设计师）</td><td>图形界面可视化编辑工具，已被集成在 Qt Creator 中，在 Qt Creator 中编辑或创建界面文件时，就可以自动打开。</td></tr><tr><td>Linguist（Qt 语言家）</td><td>多国语言翻译支持工具，可以用来编辑语言资源文件，在开发多语言界面的应用程序时会用到。</td></tr><tr><td>Qt 5.xx.x(MinGW 5.3.0 32bit)</td><td>Qt 命令行工具，用来配置 Qt 开发环境（主要是设置 PATH 变量）</td></tr></tbody></table></div> 
+<p>&nbsp;参考：<a class="link-info" href="https://blog.csdn.net/Qi_1337/article/details/121249717" title="QT5.15.2在线安装教程（详细图文）">QT5.15.2在线安装教程（详细图文）</a></p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <a class="link-info" href="https://blog.csdn.net/weixin_46098577/article/details/122092822" title="Qt5.14.2下载与安装（保姆级图文教程）">Qt5.14.2下载与安装（保姆级图文教程）</a></p>
+                </div><div><div></div></div>
+        </div>

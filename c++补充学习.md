@@ -140,7 +140,13 @@ int main() {
 | `int64_t`  | 有符号的 64 位整数 | 有符号        | -9,223,372,036,854,775,808 | 9,223,372,036,854,775,807  |
 | `uint64_t` | 无符号的 64 位整数 | 无符号        | 0                          | 18,446,744,073,709,551,615 |
 
+## 2 函数调用栈
 
+[11](https://www.yigegongjiang.com/2022/%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88%E4%B9%8B%E5%BD%BB%E5%BA%95%E7%90%86%E8%A7%A3/)
+
+[22](https://zhuanlan.zhihu.com/p/103454656)
+
+[33](https://mthli.xyz/stackful-stackless/)
 
 # 标准库补充
 
@@ -207,5 +213,101 @@ uint32_t threadSize = std::thread::hardware_concurrency();
 | `std::tuple_size_v`    | C++14引入的快捷方式，用于获取元组中元素的数量           |
 | `std::swap`            | 交换两个元组的内容                                      |
 
-这些函数使得对 `std::tuple` 进行操作更加方便和灵活。
+```cpp
+#include <tuple>
 
+// 创建一个 std::tuple 对象，包含给定的参数
+auto myTuple = std::make_tuple(arg1, arg2, arg3, ...);
+
+```
+
+# 模板
+
+## 1 模板函数返回类型自动推导
+
+```cpp
+template <typename T>
+auto myFunction(T arg1, T arg2) -> decltype(arg1 + arg2) {
+    // 函数体
+}
+
+```
+
+，`auto` 关键字用于表示函数的返回类型将由后面的表达式推导得出，而 `decltype` 关键字用于获取表达式的类型。因此，`decltype(arg1 + arg2)` 将会推导出函数的返回类型，而不是显式地指定返回类型
+
+
+
+# Cmake
+
+## 0 预置量
+
+| 名称               | 内容                            |
+| ------------------ | ------------------------------- |
+| `CMAKE_SOURCE_DIR` | 项目根目录,vs中打开的最顶级目录 |
+
+
+
+## 1 设置依赖
+
+1. **add_dependencies**：
+
+   - `add_dependencies`命令用于指定一个目标（target）依赖于其他目标。它不会设置编译器的链接选项，只是表示在构建某个目标之前，需要先构建其他的目标。
+
+   - 该命令通常用于在构建某个目标之前，先构建该目标所依赖的其他目标。例如，在构建一个可执行文件之前，可能需要先构建一些库文件。
+
+   - 确保依赖的声明在`add_dependencies`之后
+
+   - `add_dependencies`命令的语法为：
+     ```cmake
+     add_dependencies(target-name dependency1 dependency2 ...)
+     ```
+
+2. **target_link_libraries**：
+
+   - `target_link_libraries`命令用于将目标（target）链接到一个或多个库。它设置了链接器的选项，以便将指定的库链接到目标中。
+
+   - 该命令通常用于指定目标需要链接的第三方库或自定义库。
+
+   - `target_link_libraries`命令的语法为：
+     ```cmake
+     target_link_libraries(target-name library1 library2 ...)
+     ```
+
+## 2 设置依赖包要索的路径
+
+`CMAKE_PREFIX_PATH`是一个CMake变量，用于指定在搜索依赖包时要搜索的路径。这个变量通常用于告诉CMake在哪里可以找到所需的依赖包。
+
+具体来说，当你使用`find_package()`命令来查找某个依赖包时，CMake会按照以下顺序搜索依赖包：
+
+1. 首先，它会搜索系统默认的安装路径。
+2. 然后，它会搜索`CMAKE_PREFIX_PATH`变量中指定的路径。
+3. 最后，它会搜索其他默认路径。
+
+因此，通过设置`CMAKE_PREFIX_PATH`变量，你可以告诉CMake在特定的路径下搜索依赖包。
+
+对于Qt来说，如果你将Qt安装在非默认的路径下，你可以通过设置`CMAKE_PREFIX_PATH`来告诉CMake在Qt的安装路径下搜索Qt相关的模块。例如：
+
+```cmake
+set(CMAKE_PREFIX_PATH "/path/to/Qt")
+```
+
+这样CMake就会在指定的路径下搜索Qt相关的模块。
+
+## 3 设置输出目录
+
+1. **CMAKE_RUNTIME_OUTPUT_DIRECTORY**：
+   - 这个变量用于设置可执行文件（例如.exe文件）的输出目录。
+   - 当你使用`add_executable()`命令定义可执行文件时，可以通过设置`CMAKE_RUNTIME_OUTPUT_DIRECTORY`变量来指定可执行文件的输出目录。
+   - 例如，通过设置`set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)`，可将所有的可执行文件输出到项目根目录下的bin目录中。
+
+2. **CMAKE_LIBRARY_OUTPUT_DIRECTORY**：
+   - 这个变量用于设置共享库文件（例如.dll文件、.so文件等）的输出目录。
+   - 当你使用`add_library()`命令定义共享库文件时，可以通过设置`CMAKE_LIBRARY_OUTPUT_DIRECTORY`变量来指定共享库文件的输出目录。
+   - 例如，通过设置`set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)`，可将所有的共享库文件输出到项目根目录下的lib目录中。
+
+3. **CMAKE_ARCHIVE_OUTPUT_DIRECTORY**：
+   - 这个变量用于设置归档文件（静态库文件，例如.lib文件、.a文件等）的输出目录。
+   - 当你使用`add_library()`命令定义静态库文件时，可以通过设置`CMAKE_ARCHIVE_OUTPUT_DIRECTORY`变量来指定静态库文件的输出目录。
+   - 例如，通过设置`set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)`，可将所有的静态库文件输出到项目根目录下的lib目录中。
+
+通过设置这些变量，你可以更加灵活地控制项目中各种类型文件的输出位置。

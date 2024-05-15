@@ -1884,6 +1884,58 @@ int main()
 
 ```
 
+# vs使用qt
+
+## 打开Visual Studio 2022
+
+选择菜单栏的【扩展】->【管理扩展】
+
+<img src="https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202405151612379.png" alt="image-20240515161241007" style="zoom: 33%;" />
+
+## 下载QT插件
+
+输入Qt搜索，然后下载【Qt Visual Studio Tools】，等待下载完成
+
+<img src="https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202405151613212.png" alt="image-20240515161321728" style="zoom:33%;" />
+
+## 安装QT插件
+
+等待自动安装完成后，会弹出如下界面，点击【Install】
+
+<img src="https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202405151614967.png" alt="image-20240515161401616" style="zoom:33%;" />
+
+如果弹出以下弹窗，点击【End Tasks】，这里是因为未关闭VS软件，点击后自动关闭
+
+<img src="https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202405151614253.png" alt="image-20240515161422903" style="zoom:33%;" />
+
+关闭VS后，等待安装完成
+
+## 设置QT插件
+
+再次打开Vs，【扩展】->【Qt VS Tools】->【Options】
+
+![image-20240515161501737](https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202405151615819.png)
+
+进入【Options】界面后，选择【Qt】->【Versions】->【add new Qt Versions】
+
+![image-20240515161526437](https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202405151615522.png)
+
+打开【add new Qt Versions】后，点击文件夹，在Qt目录下找到【msvc2019_64/bin/qmake.exe】，这里根据自己的版本选择，点击【确定】
+
+![image-20240515161539609](https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202405151615700.png)
+
+## 设置默认打开ui文件界面
+
+【ui文件】右键打开方式
+
+<img src="https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202405151617579.png" alt="image-20240515161734520" style="zoom: 50%;" />
+
+【添加】选择qt目录下的【msvc2019_64/bin/designer.exe】，设为【默认】打开
+
+<img src="https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202405151619075.png" alt="image-20240515161933727" style="zoom:50%;" />
+
+![image-20240515164012980](https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202405151640041.png)
+
 # 错误
 
 问题: **qt 在ui界面添加控件后在cpp文件中无法调用解决方法**
@@ -1891,6 +1943,32 @@ int main()
 结果：成功解决问题
 
 ![image-20240428172412623](https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202404281724230.png)
+
+问题：**在exe可执行文件目录添加以来的动态库**
+
+使用`windeployqt`非常简单，它是一个在Qt安装目录的bin文件夹中的可执行文件。以下是使用`windeployqt`的基本步骤：
+
+1. **打开命令提示符或者PowerShell**：
+
+   打开`qt5.15.2（MinGw8.1.0 64-bit）`
+
+   进入`cd bin`目录
+
+2. **导入可执行文件所在的目录**：
+   直接拖动exe文件进入powershell
+
+3. **运行`windeployqt`命令**：
+   在路径后面加上`windeployqt`
+
+   ```shell
+   D:\software\Perfessional\QT5.15.2\5.15.2\mingw81_64\bin>D:\Work\22\Debug\站机仿真平台.exe windeployqt
+   ```
+
+4. **等待`windeployqt`执行完成**：
+   `windeployqt`将会分析你的可执行文件，并将所需的Qt动态链接库复制到相同目录下。执行完成后，你应该能在该目录中看到新复制的Qt库文件。
+
+5. **运行你的应用程序**：
+   确保所有的Qt库文件都已经被复制到了正确的位置，然后尝试运行你的应用程序。
 
 
 

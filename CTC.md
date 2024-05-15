@@ -187,10 +187,26 @@ typedef struct _OVERLAPPED {
 } OVERLAPPED, *LPOVERLAPPED;
 ```
 
+## 高效windows网络编程
+
+windows 高效网络编程 IOCP
+1.  完成端口概述
+2.  什么是重叠 IO
+3.  IOCP 的工作原理
+4.  同步 IO 和 异步 IO的区别
+5.  windows 异步 IO 接口
+6.  手撕 IOCP 网络编程案例
 
 
 
+# 工作计划
+
+5.13
 
 下周任务：仔细阅读LoopWork剩余部分代码
 
 以及：co_worker的所有代码
+
+# executer调度框架
+
+[同workflow](https://zhuanlan.zhihu.com/p/518265010)
