@@ -596,14 +596,6 @@ comboBox.addItem("Option 1", QVariant(1));
 
 堆叠窗口（Stacked Widget）是Qt框架中常用的一种容器控件，用于管理多个子窗口（小部件），但同时只显示其中一个子窗口。它的常用用法包括：
 
-1. **显示不同的页面**：堆叠窗口通常用于在同一个区域显示多个页面或视图。你可以在堆叠窗口中添加多个子窗口（页面），然后通过切换当前显示的子窗口来显示不同的页面内容。
-
-2. **向导式界面**：堆叠窗口可以用于创建向导式界面，其中每个步骤都表示一个页面。用户可以通过向前或向后导航来完成整个过程。
-
-3. **选项卡替代**：有时候，堆叠窗口也可以用作选项卡的替代品。在某些情况下，如果选项卡太多会导致界面混乱，可以考虑使用堆叠窗口来组织内容。
-
-以下是堆叠窗口的常用用法示例：
-
 ```cpp
 // 创建堆叠窗口对象(可以ui直接创建)
 QStackedWidget *stackedWidget = new QStackedWidget;
@@ -634,6 +626,51 @@ connect(button2, &QPushButton::clicked, stackedWidget, [=](){
 layout->addWidget(stackedWidget);
 
 ```
+
+#### 5.3.1 应用
+
+* 根据name和widget自动添加到stack widget中，点击button，切换页面
+
+```cpp
+Coroutine<void> MainWindow::init()
+{
+    // 获取子页面信息
+    auto &emulators = EmulatorManager::getInstance()->emulators();
+    for (auto &emulator : emulators)
+    {
+        // 子页面名称
+        auto btn = new QPushButton(QString::fromLocal8Bit(emulator->name()));
+        // 子页面窗口
+        auto widget = emulator->widget();
+		
+        // 添加
+        // verticalLayoutMainPage：垂直layout
+        ui->verticalLayoutMainPage->addWidget(btn);
+        // stackedWidgetMainPage： stack widget
+        ui->stackedWidgetMainPage->addWidget(widget);
+        // 设置子窗口可以使用主窗口大小
+        widget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+        // 点击切换页面
+        connect(btn, &QPushButton::clicked, this,
+                [=]()
+                {
+                    if (widget != ui->stackedWidgetMainPage->currentWidget())
+                    {
+                        ui->stackedWidgetMainPage->setCurrentWidget(widget);
+                    }
+                });
+    }
+
+    co_return;
+}
+```
+
+
+
+
+
+
 
 ### 5.4 QTabWidget
 

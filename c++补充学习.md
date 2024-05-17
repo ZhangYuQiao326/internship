@@ -311,3 +311,24 @@ set(CMAKE_PREFIX_PATH "/path/to/Qt")
    - 例如，通过设置`set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)`，可将所有的静态库文件输出到项目根目录下的lib目录中。
 
 通过设置这些变量，你可以更加灵活地控制项目中各种类型文件的输出位置。
+
+# windows API
+
+| API                | 功能                                            |
+| ------------------ | ----------------------------------------------- |
+| `GetProcAddress()` | 从指定的动态链接库（DLL）中获取一个函数的地址。 |
+| ``                 |                                                 |
+| ``                 |                                                 |
+| ``                 |                                                 |
+| ``                 |                                                 |
+
+* `GetProcAddress()`
+
+```cpp
+// 获取指定函数的地址
+void *DllUtils::dllSymbol(void *dll, const char *funcName)
+{
+    return GetProcAddress((HMODULE)dll, funcName);
+}
+```
+
