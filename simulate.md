@@ -113,7 +113,25 @@ endif()
 
 ![image-20240515152143095](https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202405151521143.png)
 
-# 11
+# 1 设计标准
+
+* 设置全局字体大小
+
+```cpp
+QFont font("Arial", 10);
+qApp->setFont(font);
+```
+
+* 选项卡字体大小：10
+
+```cpp
+QTabBar* tabBar = ui->tabWidget->tabBar();
+tabBar->setFont(QFont("Arial", 10));
+```
+
+
+
+# 2
 
 ## 1 mainWindow
 
@@ -150,3 +168,4 @@ Coroutine<void> MainWindow::init()
 
 
 
+![image-20240516111859329](https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202405161118509.png)

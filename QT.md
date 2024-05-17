@@ -423,7 +423,7 @@ setCentralWidget(edit);
 
 ## 5 控件
 
-### QComboBox
+### 5.1 QComboBox
 
 * 下拉菜单
 
@@ -459,7 +459,7 @@ QComboBox comboBox;
 comboBox.addItem("Option 1", QVariant(1));
 ```
 
-### tableWidget
+### 5.2 tableWidget
 
 * 创建新的表格
 
@@ -589,9 +589,112 @@ comboBox.addItem("Option 1", QVariant(1));
   table->setFrameShape(QFrame::NoFrame); //设置无边框
   ```
 
-  
 
-## 5 添加资源文件
+### 5.3 stacked Widget
+
+* 根据按钮点击，显示不同的widget
+
+堆叠窗口（Stacked Widget）是Qt框架中常用的一种容器控件，用于管理多个子窗口（小部件），但同时只显示其中一个子窗口。它的常用用法包括：
+
+1. **显示不同的页面**：堆叠窗口通常用于在同一个区域显示多个页面或视图。你可以在堆叠窗口中添加多个子窗口（页面），然后通过切换当前显示的子窗口来显示不同的页面内容。
+
+2. **向导式界面**：堆叠窗口可以用于创建向导式界面，其中每个步骤都表示一个页面。用户可以通过向前或向后导航来完成整个过程。
+
+3. **选项卡替代**：有时候，堆叠窗口也可以用作选项卡的替代品。在某些情况下，如果选项卡太多会导致界面混乱，可以考虑使用堆叠窗口来组织内容。
+
+以下是堆叠窗口的常用用法示例：
+
+```cpp
+// 创建堆叠窗口对象(可以ui直接创建)
+QStackedWidget *stackedWidget = new QStackedWidget;
+
+// 创建子窗口（页面）并添加到堆叠窗口中
+QWidget *page1 = new QWidget;
+QWidget *page2 = new QWidget;
+QWidget *page3 = new QWidget;
+
+stackedWidget->addWidget(page1);
+stackedWidget->addWidget(page2);
+stackedWidget->addWidget(page3);
+
+// 切换显示不同的子窗口
+stackedWidget->setCurrentIndex(0); // 显示第一个页面
+stackedWidget->setCurrentWidget(page2); // 通过指定页面对象显示第二个页面
+
+// 或者使用信号和槽机制来触发页面切换
+connect(button1, &QPushButton::clicked, stackedWidget, [=](){
+    stackedWidget->setCurrentIndex(0);
+});
+
+connect(button2, &QPushButton::clicked, stackedWidget, [=](){
+    stackedWidget->setCurrentWidget(page2);
+});
+
+// 将堆叠窗口添加到布局中
+layout->addWidget(stackedWidget);
+
+```
+
+### 5.4 QTabWidget
+
+*  自带切换选项，展现窗口
+
+```cpp
+// 设置选项卡字体大小
+QTabBar* tabBar = ui->tabWidget->tabBar();
+tabBar->setFont(QFont("Arial", 8));
+
+// 设置窗口内字体大小
+QFont tabFont = tabWidget->font();
+tabFont.setPointSize(12); 
+```
+
+### 5.5 label
+
+<img src="https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202405161643521.png" alt="image-20240516164321249" style="zoom:50%;" />
+
+| 属性      | 功能                  |
+| --------- | --------------------- |
+| alignment | 设置label文字水平居中 |
+
+
+
+## 6 layout
+
+### 6.1 全局函数
+
+| 函数              | 功能               |
+| ----------------- | ------------------ |
+| `showMaximized()` | 显示时，窗口最大化 |
+| ``                |                    |
+| ``                |                    |
+| ``                |                    |
+| ``                |                    |
+
+
+
+### 6.2 QVBoxLayout
+
+| 函数           | 功能                                                         |
+| -------------- | ------------------------------------------------------------ |
+| `addStretch()` | 添加一个可伸缩的空间,在窗口大小改变时控件保持在布局的顶部不动 |
+| ``             |                                                              |
+| ``             |                                                              |
+| ``             |                                                              |
+
+### 6.3 UI控件
+
+<img src="https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202405161341094.png" alt="image-20240516134128034" style="zoom: 50%;" />
+
+| 属性    | 作用                     |
+| ------- | ------------------------ |
+| Margin  | 布局边距大小             |
+| spacing | 布局内各个部件间距       |
+| stretch | 布局内各个部件的所占比例 |
+
+
+
+## 6 添加资源文件
 
 1. <img src="C:\Users\zhang\AppData\Roaming\Typora\typora-user-images\image-20230720124303130.png" alt="image-20230720124303130" style="zoom: 50%;" />
 2. 
