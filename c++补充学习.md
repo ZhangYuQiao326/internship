@@ -245,7 +245,25 @@ auto myFunction(T arg1, T arg2) -> decltype(arg1 + arg2) {
 | ------------------ | ------------------------------- |
 | `CMAKE_SOURCE_DIR` | 项目根目录,vs中打开的最顶级目录 |
 
+```cmake
+cmake_minimum_required(VERSION 3.5)
+project(MyProject VERSION 1.0 LANGUAGES CXX)
 
+# 找第三方库
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
+
+# 头文件搜索路径
+include_directories(${CMAKE_SOURCE_DIR})
+# 生成可执行文件
+add_executable(MyExecutable main.cpp)
+# 生成目标库
+add_library(mylib STATIC source1.cpp)
+# 链接库
+target_link_libraries(MyExecutable PRIVATE Qt5::Widgets)
+
+# 安装
+install(TARGETS MyExecutable DESTINATION bin)
+```
 
 ## 1 设置依赖
 
@@ -262,18 +280,99 @@ auto myFunction(T arg1, T arg2) -> decltype(arg1 + arg2) {
      add_dependencies(target-name dependency1 dependency2 ...)
      ```
 
-2. **target_link_libraries**：
+## 2 设置输出目录
 
-   - `target_link_libraries`命令用于将目标（target）链接到一个或多个库。它设置了链接器的选项，以便将指定的库链接到目标中。
+1. **CMAKE_RUNTIME_OUTPUT_DIRECTORY**：
+   - 这个变量用于设置可执行文件（例如.exe文件）的输出目录。
+   - 当你使用`add_executable()`命令定义可执行文件时，可以通过设置`CMAKE_RUNTIME_OUTPUT_DIRECTORY`变量来指定可执行文件的输出目录。
+   - 例如，通过设置`set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)`，可将所有的可执行文件输出到项目根目录下的bin目录中。
 
-   - 该命令通常用于指定目标需要链接的第三方库或自定义库。
+2. **CMAKE_LIBRARY_OUTPUT_DIRECTORY**：
+   - 这个变量用于设置共享库文件（例如.dll文件、.so文件等）的输出目录。
+   - 当你使用`add_library()`命令定义共享库文件时，可以通过设置`CMAKE_LIBRARY_OUTPUT_DIRECTORY`变量来指定共享库文件的输出目录。
+   - 例如，通过设置`set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)`，可将所有的共享库文件输出到项目根目录下的lib目录中。
 
-   - `target_link_libraries`命令的语法为：
-     ```cmake
-     target_link_libraries(target-name library1 library2 ...)
-     ```
+3. **CMAKE_ARCHIVE_OUTPUT_DIRECTORY**：
+   - 这个变量用于设置归档文件（静态库文件，例如.lib文件、.a文件等）的输出目录。
+   - 当你使用`add_library()`命令定义静态库文件时，可以通过设置`CMAKE_ARCHIVE_OUTPUT_DIRECTORY`变量来指定静态库文件的输出目录。
+   - 例如，通过设置`set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)`，可将所有的静态库文件输出到项目根目录下的lib目录中。
 
-## 2 设置依赖包要索的路径
+通过设置这些变量，你可以更加灵活地控制项目中各种类型文件的输出位置。
+
+## 4 生成文件
+
+cmake最终的生成文件有两类：要么生成库文件，要么是可执行文件
+
+### 4.1 生成目标库
+
+```cmake
+add_library(library_name [STATIC | SHARED | MODULE] sources...)
+```
+
+- `library_name`: 库的名称。
+- `STATIC | SHARED | MODULE`: 指定库的类型，分别表示静态库、动态库和可加载模块，默认为静态库。
+- `sources...`: 库的源文件列表。
+
+示例：
+```cmake
+# 创建一个名为 mylib 的静态库
+add_library(mylib STATIC source1.cpp source2.cpp)
+```
+
+### 4.2 生成可执行文件
+
+```cmake
+add_executable(CSM
+            ${PROJECT_SOURCES}
+
+            CSM-CTC/csm_ctc.h CSM-CTC/csm_ctc.cpp CSM-CTC/csm_ctc.ui
+            pagemanger.h pagemanger.cpp
+        )
+```
+
+### 4.3 链接 目标库/可执行文件
+
+这些库可以是系统库、第三方库或项目内部生成的库。
+
+```cmake
+target_link_libraries(target_name [PRIVATE|PUBLIC|INTERFACE] library1 [library2 ...])
+```
+
+- `target_name`：目标的名称，可以是通过 `add_executable` 或 `add_library` 命令定义的目标名称。
+- `library1`, `library2` 等：要链接的库的名称。可以是系统库、第三方库或项目内部生成的库。
+
+- `PRIVATE`：只有当前目标及其依赖目标可以访问链接库。
+- `PUBLIC`：除了当前目标和其依赖目标外，还可以访问链接库的任何目标。
+- `INTERFACE`：只有依赖目标可以访问链接库，而当前目标不能访问。
+
+```cmake
+# 将 MyExecutable 与 Qt Widgets 库链接
+target_link_libraries(MyExecutable PRIVATE Qt5::Widgets)
+
+# 将 MyLibrary 与 OpenSSL 和 Threads 库链接
+target_link_libraries(MyLibrary PRIVATE OpenSSL::SSL Threads::Threads)
+
+# 将 MyExecutable 与 MyLibrary 和 MyOtherLibrary 链接，同时使 MyOtherLibrary 对 MyExecutable 不可见
+target_link_libraries(MyExecutable PRIVATE MyLibrary)
+target_link_libraries(MyExecutable PUBLIC MyOtherLibrary)
+```
+
+## 5 查找三方库
+
+### 5.1 find_package
+
+`find_package`用查找第三方库，比如Boost、Qt等，需要先通过`find_package`找到它们。然后通过`target_link_libraries`将这些库链接到目标库或可执行文件中。
+
+示例：
+```cmake
+# 查找并加载 Qt5 的 Widgets 模块
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
+
+# 链接 Qt5 的 Widgets 模块到目标库或可执行文件
+target_link_libraries(my_target Qt5::Widgets)
+```
+
+### 5.2 查找路径
 
 `CMAKE_PREFIX_PATH`是一个CMake变量，用于指定在搜索依赖包时要搜索的路径。这个变量通常用于告诉CMake在哪里可以找到所需的依赖包。
 
@@ -293,24 +392,156 @@ set(CMAKE_PREFIX_PATH "/path/to/Qt")
 
 这样CMake就会在指定的路径下搜索Qt相关的模块。
 
-## 3 设置输出目录
+## 5 文件操作
 
-1. **CMAKE_RUNTIME_OUTPUT_DIRECTORY**：
-   - 这个变量用于设置可执行文件（例如.exe文件）的输出目录。
-   - 当你使用`add_executable()`命令定义可执行文件时，可以通过设置`CMAKE_RUNTIME_OUTPUT_DIRECTORY`变量来指定可执行文件的输出目录。
-   - 例如，通过设置`set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)`，可将所有的可执行文件输出到项目根目录下的bin目录中。
+下面是一些常见 `file` 命令用法的代码示例，展示了如何在 CMake 中使用这些命令来执行各种文件系统操作。
 
-2. **CMAKE_LIBRARY_OUTPUT_DIRECTORY**：
-   - 这个变量用于设置共享库文件（例如.dll文件、.so文件等）的输出目录。
-   - 当你使用`add_library()`命令定义共享库文件时，可以通过设置`CMAKE_LIBRARY_OUTPUT_DIRECTORY`变量来指定共享库文件的输出目录。
-   - 例如，通过设置`set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)`，可将所有的共享库文件输出到项目根目录下的lib目录中。
+| 参数           | 功能             |
+| -------------- | ---------------- |
+| 创建目录       | `MAKE_DIRECTORY` |
+| 复制文件       | `MOVE`           |
+| 重命名         | `RENAME`         |
+| 删除文件       | `REMOVE`         |
+| 获取文件列表   | `GLOB`           |
+| 读取文件       | `READ`           |
+| 写入文件       | `WRITE`          |
+| 追加写入       | `APPEND`         |
+| 文件大小       | `SIZE`           |
+| 时间戳         | `TIMESTAMP`      |
+| 转换为指定路径 | `RELATIVE_PATH`  |
 
-3. **CMAKE_ARCHIVE_OUTPUT_DIRECTORY**：
-   - 这个变量用于设置归档文件（静态库文件，例如.lib文件、.a文件等）的输出目录。
-   - 当你使用`add_library()`命令定义静态库文件时，可以通过设置`CMAKE_ARCHIVE_OUTPUT_DIRECTORY`变量来指定静态库文件的输出目录。
-   - 例如，通过设置`set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)`，可将所有的静态库文件输出到项目根目录下的lib目录中。
+> 创建一个或多个目录：
 
-通过设置这些变量，你可以更加灵活地控制项目中各种类型文件的输出位置。
+```cmake
+cmake_minimum_required(VERSION 3.5)
+project(CreateDirectoryExample)
+
+# 创建单个目录
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/new_directory)
+
+# 创建多个目录
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/dir1 ${CMAKE_BINARY_DIR}/dir2)
+```
+
+> 将文件从一个位置复制到另一个位置：
+
+```cmake
+# 假设有一个文件 source.txt
+file(COPY ${CMAKE_SOURCE_DIR}/source.txt DESTINATION ${CMAKE_BINARY_DIR})
+```
+
+> 将文件从一个名称重命名为另一个名称：
+
+```cmake
+# 假设有一个文件 oldname.txt
+file(RENAME ${CMAKE_SOURCE_DIR}/oldname.txt ${CMAKE_SOURCE_DIR}/newname.txt)
+```
+
+> 删除一个或多个文件：
+
+```cmake
+cmake_minimum_required(VERSION 3.5)
+project(RemoveFileExample)
+
+# 假设有一些文件要删除
+file(REMOVE ${CMAKE_SOURCE_DIR}/file1.txt ${CMAKE_SOURCE_DIR}/file2.txt)
+```
+
+> 使用 `GLOB` 获取目录中所有匹配指定模式的文件列表：
+
+```cmake
+# 获取所有 .cpp 和 .h 文件
+file(GLOB cpp_files ${CMAKE_SOURCE_DIR}/*.cpp)
+file(GLOB header_files ${CMAKE_SOURCE_DIR}/*.h)
+
+# 打印找到的文件
+message("CPP files: ${cpp_files}")
+message("Header files: ${header_files}")
+```
+
+> 读取文件内容并存储到变量中：
+
+```cmake
+cmake_minimum_required(VERSION 3.5)
+project(ReadFileExample)
+
+# 假设有一个文件 example.txt
+file(READ ${CMAKE_SOURCE_DIR}/example.txt file_content)
+message("File content: ${file_content}")
+```
+
+>  将内容写入文件：
+
+```cmake
+cmake_minimum_required(VERSION 3.5)
+project(WriteFileExample)
+
+# 写入内容到文件
+file(WRITE ${CMAKE_BINARY_DIR}/output.txt "Hello, CMake!\n")
+```
+
+> 在文件末尾追加内容：
+
+```cmake
+cmake_minimum_required(VERSION 3.5)
+project(AppendFileExample)
+
+# 追加内容到文件
+file(APPEND ${CMAKE_BINARY_DIR}/output.txt "This is appended text.\n")
+```
+
+> 获取文件的大小：
+
+```cmake
+cmake_minimum_required(VERSION 3.5)
+project(FileSizeExample)
+
+# 假设有一个文件 example.txt
+file(SIZE ${CMAKE_SOURCE_DIR}/example.txt file_size)
+message("File size: ${file_size} bytes")
+```
+
+> 获取文件的时间戳：
+
+```cmake
+cmake_minimum_required(VERSION 3.5)
+project(FileTimestampExample)
+
+# 假设有一个文件 example.txt
+file(TIMESTAMP ${CMAKE_SOURCE_DIR}/example.txt file_timestamp)
+message("File timestamp: ${file_timestamp}")
+```
+
+> 将文件的绝对路径转换为相对于指定目录的相对路径：
+
+```cmake
+cmake_minimum_required(VERSION 3.5)
+project(RelativePathExample)
+
+# 获取文件的相对路径
+file(RELATIVE_PATH relative_path ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/subdir/example.txt)
+message("Relative path: ${relative_path}")
+```
+
+这些示例展示了如何在 CMake 中使用 `file` 命令来进行文件系统操作，从而在构建过程管理项目的文件和目录。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # windows API
 

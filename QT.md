@@ -54,7 +54,9 @@ int main(int argc, char *argv[])
 
 ![image-20230718142235686](C:\Users\zhang\AppData\Roaming\Typora\typora-user-images\image-20230718142235686.png)
 
-## 1.1 pro文件介绍
+### 1.1 pro文件介绍
+
+* 使用qmake来build项目
 
 ```cpp
 # 项目底层模块
@@ -99,6 +101,111 @@ LIBS += $$PWD/ffmepg-4.2/bin/avformat.lib \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+```
+
+### 1.2 cmakelist文件介绍
+
+* 使用cmake来build项目
+
+```cmake
+cmake_minimum_required(VERSION 3.5)
+
+project(CSM VERSION 0.1 LANGUAGES CXX)
+
+# 自动识别ui文件
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# 找第三方库
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+
+# 项目文件
+set(PROJECT_SOURCES
+        main.cpp
+        mainwindow.cpp
+        mainwindow.h
+        mainwindow.ui
+)
+
+# 若是qt版本高于6，通过qt_add_executable创建exe文件
+if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
+    qt_add_executable(CSM
+        MANUAL_FINALIZATION
+        ${PROJECT_SOURCES}
+    )
+# Define target properties for Android with Qt 6 as:
+#    set_property(TARGET CSM APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
+#                 ${CMAKE_CURRENT_SOURCE_DIR}/android)
+# For more information, see https://doc.qt.io/qt-6/qt-add-executable.html#target-creation
+else()
+	# 如果是安卓，则生成动态库
+    if(ANDROID)
+        add_library(CSM SHARED
+            ${PROJECT_SOURCES}
+        )
+# Define properties for Android with Qt 5 after find_package() calls as:
+#    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
+    else()
+    	# 生成可执行文件
+        add_executable(CSM
+            ${PROJECT_SOURCES}
+
+            CSM-CTC/csm_ctc.h CSM-CTC/csm_ctc.cpp CSM-CTC/csm_ctc.ui
+            pagemanger.h pagemanger.cpp
+            CSM-RBC/csm_rbc.h CSM-RBC/csm_rbc.cpp CSM-RBC/csm_rbc.ui
+            CSM-TSRS/csm_tsrs.h CSM-TSRS/csm_tsrs.cpp CSM-TSRS/csm_tsrs.ui
+            CSM_DHJC/csm_dhjc.h CSM_DHJC/csm_dhjc.cpp CSM_DHJC/csm_dhjc.ui
+            CSM_LMD/csm_lmd.h CSM_LMD/csm_lmd.cpp CSM_LMD/csm_lmd.ui
+            CSM_DMS/csm_dms.h CSM_DMS/csm_dms.cpp CSM_DMS/csm_dms.ui
+        )
+    endif()
+endif()
+
+# =========================== 自己设置
+# 设置头文件查找目录
+include_directories(${CMAKE_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/CSM-CTC
+    ${CMAKE_SOURCE_DIR}/CSM_DHJC
+    ${CMAKE_SOURCE_DIR}/CSM_DMS
+    ${CMAKE_SOURCE_DIR}/CSM-RBC
+    ${CMAKE_SOURCE_DIR}/CSM-TSRS
+    ${CMAKE_SOURCE_DIR}/CSM_CTC
+    ${CMAKE_SOURCE_DIR}/CSM_LMD
+)
+
+# 链接库
+target_link_libraries(CSM PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+
+# Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
+# If you are developing for iOS or macOS you should consider setting an
+# explicit, fixed bundle identifier manually though.
+if(${QT_VERSION} VERSION_LESS 6.1.0)
+  set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.CSM)
+endif()
+set_target_properties(CSM PROPERTIES
+    ${BUNDLE_ID_OPTION}
+    MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
+    MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+    MACOSX_BUNDLE TRUE
+    WIN32_EXECUTABLE TRUE
+)
+
+include(GNUInstallDirs)
+install(TARGETS CSM
+    BUNDLE DESTINATION .
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+if(QT_VERSION_MAJOR EQUAL 6)
+    qt_finalize_executable(CSM)
+endif()
 
 ```
 
@@ -311,7 +418,7 @@ classIsOver("name");
 * lambda表达式可以直接作为槽函数，而无需传入其地址
 
 ```cpp
-QPushButten * bt = new QPushButten(this);
+       QPushButten * bt = new QPushButten(this);
 connect(bt,&QPushButten::clicked,[=]{
     this->closed();
     emit te->downClass();
@@ -320,6 +427,8 @@ connect(bt,&QPushButten::clicked,[=]{
 ```
 
 ## 4 QMainWindow主窗口
+
+### 4.1 mainwindow
 
 * 设置程序名
 
@@ -341,7 +450,7 @@ int main(int argc, char *argv[])
 
 
 
-* 菜单栏
+菜单栏
 
 ```cpp
 QMenuBar *bar = new QMenuBar();
@@ -357,6 +466,15 @@ file_menu->addSeparator();
 
 QAction *open_action = file_menu->addAction("打开");
 ```
+
+以下是以表格形式呈现的`QAction`类的信号，包含描述：
+
+| 信号            | 描述                                                         |
+| --------------- | ------------------------------------------------------------ |
+| `changed()`     | 当`QAction`的状态（例如可用性、文本、图标等）发生变化时发出。 |
+| `hovered()`     | 当鼠标光标悬停在`QAction`上时发出。                          |
+| `toggled(bool)` | 当`QAction`的状态发生变化时发出，例如复选框或切换按钮的情况。参数`bool`表示新的状态。 |
+| `trigger()`     | 当调用`QAction::trigger()`方法时发出，通常用于以编程方式手动触发操作。 |
 
 * 工具栏
 * 用来存放菜单中的功能，功能由菜单创建
@@ -646,6 +764,7 @@ Coroutine<void> MainWindow::init()
         // 添加
         // verticalLayoutMainPage：垂直layout
         ui->verticalLayoutMainPage->addWidget(btn);
+        
         // stackedWidgetMainPage： stack widget
         ui->stackedWidgetMainPage->addWidget(widget);
         // 设置子窗口可以使用主窗口大小
@@ -700,13 +819,13 @@ tabFont.setPointSize(12);
 
 ### 6.1 全局函数
 
-| 函数              | 功能               |
-| ----------------- | ------------------ |
-| `showMaximized()` | 显示时，窗口最大化 |
-| ``                |                    |
-| ``                |                    |
-| ``                |                    |
-| ``                |                    |
+| 函数                     | 功能               |
+| ------------------------ | ------------------ |
+| `widget.showMaximized()` | 显示时，窗口最大化 |
+| ``                       |                    |
+| ``                       |                    |
+| ``                       |                    |
+| ``                       |                    |
 
 
 
@@ -731,7 +850,20 @@ tabFont.setPointSize(12);
 
 
 
-## 6 添加资源文件
+## 7 全局app设置
+
+### 7.1 设置全局字体
+
+``` cpp
+// mainwindow.cpp
+setWindowTitle(QString::fromLocal8Bit("中心仿真平台"));
+QFont font("Arial", 10);
+qApp->setFont(font);
+```
+
+
+
+## 8 添加资源文件
 
 1. <img src="C:\Users\zhang\AppData\Roaming\Typora\typora-user-images\image-20230720124303130.png" alt="image-20230720124303130" style="zoom: 50%;" />
 2. 
@@ -759,7 +891,7 @@ tabFont.setPointSize(12);
 Qicon(":/source/up.png")
 ```
 
-## 6 UI控件
+## 6 UI控件属性
 
 ### 6.1 弹簧、label
 
@@ -2078,13 +2210,13 @@ int main()
 
 # 错误
 
-问题: **qt 在ui界面添加控件后在cpp文件中无法调用解决方法**
+==问题1: **qt 在ui界面添加控件后在cpp文件中无法调用解决方法**==
 解决方法： 点击项目，将[shadow](https://so.csdn.net/so/search?q=shadow&spm=1001.2101.3001.7020) build里的✔取消；此方法是改变项目构建（build）的位置，取消勾选后会在项目内部构建
 结果：成功解决问题
 
 ![image-20240428172412623](https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202404281724230.png)
 
-问题：**在exe可执行文件目录添加以来的动态库**
+==问题2：**在exe可执行文件目录添加qt依赖的动态库**==
 
 使用`windeployqt`非常简单，它是一个在Qt安装目录的bin文件夹中的可执行文件。以下是使用`windeployqt`的基本步骤：
 
@@ -2110,7 +2242,38 @@ int main()
 5. **运行你的应用程序**：
    确保所有的Qt库文件都已经被复制到了正确的位置，然后尝试运行你的应用程序。
 
+==问题3： **qt工程没有pro文件**==
 
+build选择qmake
+
+![image-20240521164313422](https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202405211643847.png)
+
+==问题4：无法自动生成ui_xx_xx.h头文件==
+
+先对项目进行清除（删除已经生成的ui文件），重新构建（build）
+
+如果不行，则使用uic.exe手动生成
+
+1. 打开qt5.15.2powershell
+2. 进入demo.ui的目录
+3. 使用命令 `uic demo.ui > ui_demo.h `生成到当前文件
+4. 可以移动到自动生成ui文件的目录，方便管理，默认在：`D:\software\Perfessional\qt5.14\myProject\CSM\build\Desktop_Qt_5_15_2_MSVC2019_64bit-Debug\CSM_autogen\include`
+
+# qt creater操作
+
+## 快捷键
+
+| 快捷键         | 功能            |
+| -------------- | --------------- |
+| ctrl + alt + m | 打开/关闭菜单栏 |
+
+## 项目管理
+
+创建子目录：
+
+工程文件夹下创建目录 -->  creater中创建新文件 --> 设置文件存放的位置为新目录中 --> 自动识别cmake
+
+--> 注意添加cmakelist的`include_directories`识别头文件路径
 
 
 
