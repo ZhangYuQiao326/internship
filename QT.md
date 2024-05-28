@@ -47,7 +47,8 @@ int main(int argc, char *argv[])
     Widget w;
     w.show();
 
-    // 进入消息阻塞，即窗口不关闭，等到点击叉号，窗口关闭
+    //exec() 方法进入 Qt 的事件循环，开始处理事件队列中的事件。事件循环是 GUI 应用程序的核心部分，	它等待和分派事件，例如用户输入、绘图请求、网络事件等。
+	// 一直运行，直到应用程序退出
     return a.exec();
 }
 ```
@@ -579,6 +580,91 @@ comboBox.addItem("Option 1", QVariant(1));
 
 ### 5.2 tableWidget
 
+#### 5.2.1 基础设置
+
+```cpp
+// 表格操作
+#include <QApplication>
+#include <QTableWidget>
+#include <QTableWidgetItem>
+#include <QVBoxLayout>
+#include <QWidget>
+
+class TableDemo : public QWidget {
+public:
+    TableDemo(QWidget *parent = nullptr) : QWidget(parent) {
+        // 创建一个QTableWidget
+        QTableWidget *tableWidget = new QTableWidget(this);
+        
+        // 设置行数和列数
+        tableWidget->setRowCount(10);  // 设置10行
+        tableWidget->setColumnCount(3);  // 设置3列
+        
+        // 设置表头
+        QStringList headers;
+        headers << "序号" << "名称" << "状态";
+        tableWidget->setHorizontalHeaderLabels(headers);
+        
+        // 填充表格项
+        tableWidget->setItem(0, 0, new QTableWidgetItem("1"));
+        tableWidget->setItem(0, 1, new QTableWidgetItem("240DG"));
+        tableWidget->setItem(0, 2, new QTableWidgetItem("空闲"));
+        
+        tableWidget->setItem(1, 0, new QTableWidgetItem("2"));
+        tableWidget->setItem(1, 1, new QTableWidgetItem("238DG"));
+        tableWidget->setItem(1, 2, new QTableWidgetItem("空闲"));
+
+        // 隐藏行号
+        QHeaderView *header = tblList->verticalHeader();
+		header->setHidden(true);
+        
+
+    }
+};
+
+int main(int argc, char *argv[]) {
+    QApplication app(argc, argv);
+    TableDemo demo;
+    demo.show();
+    return app.exec();
+}
+
+```
+
+####  5.3.1 单元格大小
+
+下面是`ResizeMode`参数的几种常见取值及其作用：
+
+- `QHeaderView::Interactive`：允许用户通过拖动调整部分的大小。
+- `QHeaderView::Fixed`：固定大小，部分的大小不会改变。
+- `QHeaderView::Stretch`：自动拉伸，部分会根据父控件的大小自动拉伸。
+- `QHeaderView::ResizeToContents`：根据内容调整大小，部分的大小会根据其内容的大小自动调整。
+
+```cpp
+// 设置表格的大小策略，表头最后一列扩展整个表格
+tableWidget->horizontalHeader()->setStretchLastSection(true);
+// 最后一行全部扩展
+tableWidget->verticalHeader()->setStretchLastSection(true);
+        
+// 表头单元格大小均匀分布
+tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+tableWidget->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+
+// 表头单元格随文本内容调节（列）
+tableWidget->horizontalHeader()->
+setSectionResizeMode(QHeaderView::ResizeToContents);
+// 行大小随文本调节
+tableWidget->verticalHeader()->
+setSectionResizeMode(QHeaderView::ResizeToContents);
+
+// 不允许修改单元格内容
+tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
+```
+
+
+
+
+
 * 创建新的表格
 
   ```cpp
@@ -698,8 +784,6 @@ comboBox.addItem("Option 1", QVariant(1));
   // 将表格的下边与tabWidget的下边重合
   ui->table1->move(ui->table1->geometry().left(), ui->tabwgt->geometry().bottom() - tableHeight);
   ```
-
-  
 
 * 无边框
 
@@ -1376,21 +1460,78 @@ connect(ui->actioncolor,&QAction::triggered,[=]{
 
 #### 7.3.3 文件对话框
 
+ 以下是 `QFileDialog` 常用方法的表格，包含每个方法的返回值信息：
+
+| 方法                   | 功能描述                                                     | 返回值类型    | 返回值描述                                             |
+| ---------------------- | ------------------------------------------------------------ | ------------- | ------------------------------------------------------ |
+| `getOpenFileName`      | 显示一个文件选择对话框，用于选择一个文件。                   | `QString`     | 返回所选文件的路径。如果取消选择，则返回空字符串。     |
+| `getOpenFileNames`     | 显示一个文件选择对话框，用于选择多个文件。                   | `QStringList` | 返回所选文件的路径列表。如果取消选择，则返回空列表。   |
+| `getSaveFileName`      | 显示一个文件保存对话框，用于选择保存文件的位置和名称。       | `QString`     | 返回选择的保存文件路径。如果取消选择，则返回空字符串。 |
+| `getExistingDirectory` | 显示一个目录选择对话框，用于选择一个现有的目录。             | `QString`     | 返回所选目录的路径。如果取消选择，则返回空字符串。     |
+| `setNameFilter`        | 设置文件类型过滤器，例如 "*.txt;*.cpp"。                     | `void`        | 无返回值。                                             |
+| `setDirectory`         | 设置对话框的初始目录。                                       | `void`        | 无返回值。                                             |
+| `setFileMode`          | 设置文件选择对话框的模式，例如选择单个文件、多个文件或目录。 | `void`        | 无返回值。                                             |
+| `setViewMode`          | 设置对话框的视图模式，例如详细视图或列表视图。               | `void`        | 无返回值。                                             |
+
 ```cpp
- QString file = QFileDialog::getOpenFileName(this,"打开文件","C:\\Users\\zhang\\Desktop"
+#include <QApplication>
+#include <QFileDialog>
+#include <QDebug>
+
+int main(int argc, char *argv[])
+{
+    QApplication app(argc, argv);
+
+    // 单个文件选择
+    QString fileName = QFileDialog::getOpenFileName(nullptr, "选择文件", QDir::homePath(), "Images (*.png *.xpm *.jpg);;Text files (*.txt);;XML files (*.xml)");
+    if (!fileName.isEmpty()) {
+        qDebug() << "Selected file:" << fileName;
+    } else {
+        qDebug() << "No file selected.";
+    }
+
+    // 多个文件选择
+    QStringList fileNames = QFileDialog::getOpenFileNames(nullptr, "选择多个文件", QDir::homePath(), "Images (*.png *.xpm *.jpg);;Text files (*.txt);;XML files (*.xml)");
+    if (!fileNames.isEmpty()) {
+        qDebug() << "Selected files:" << fileNames;
+    } else {
+        qDebug() << "No files selected.";
+    }
+
+    // 文件保存
+    QString saveFileName = QFileDialog::getSaveFileName(nullptr, "保存文件", QDir::homePath(), "Text files (*.txt);;XML files (*.xml)");
+    if (!saveFileName.isEmpty()) {
+        qDebug() << "File to save:" << saveFileName;
+    } else {
+        qDebug() << "No file chosen for saving.";
+    }
+
+    // 选择目录
+	auto path = QFileDialog::getExistingDirectory(nullptr, QString::fromLocal8Bit("打开车站路径!"), "."); // 设置默认打开目录  （.）
+    if (path.isEmpty())
+    {
+        co_return;
+    }
+
+    return 0;
+}
 ```
 
+### 代码说明
 
+- **单个文件选择**：
+  - `getOpenFileName` 显示一个文件选择对话框，返回所选文件的路径，如果用户取消选择则返回空字符串。
 
-```cpp
-connect(ui->actionOpen,&QAction::triggered,[=](){
-        QFileDialog::getOpenFileName(this,"打开文件","C:\\Users\\zhang\\Desktop","(*.txt)");
-});
-```
+- **多个文件选择**：
+  - `getOpenFileNames` 显示一个文件选择对话框，返回所选文件的路径列表，如果用户取消选择则返回空列表。
 
+- **文件保存**：
+  - `getSaveFileName` 显示一个文件保存对话框，返回选择的保存文件路径，如果用户取消选择则返回空字符串。
 
+- **选择目录**：
+  - `getExistingDirectory` 显示一个目录选择对话框，返回所选目录的路径，如果用户取消选择则返回空字符串。
 
-<img src="C:\Users\zhang\AppData\Roaming\Typora\typora-user-images\image-20230720171010454.png" alt="image-20230720171010454" style="zoom:67%;" />
+这些方法提供了灵活的文件和目录选择功能，可以满足大多数应用程序的需求。通过适当的参数配置和返回值处理，可以大大提高用户体验和操作效率。
 
 #### 7.3.4 字体对话框
 
@@ -1926,8 +2067,6 @@ void CoinButten::mousePressEvent(QMouseEvent *e){
 
 #### 法1
 
-
-
 * 创建定时器
 
 ```cpp
@@ -1993,7 +2132,235 @@ tm.stop(); // 结束
         });
 ```
 
-## 布局设计
+## 12 QT类
+
+### 12.1 QSetting
+
+
+
+| 方法                                                         | 功能描述                                      |
+| ------------------------------------------------------------ | --------------------------------------------- |
+| `QSettings(organization, application)`                       | 创建一个基于组织和应用名称的 QSettings 对象。 |
+| `QSettings(fileName, format)`                                | 创建一个基于文件名和格式的 QSettings 对象。   |
+| `void setValue(const QString &key, const QVariant &value)`   | 设置一个键值对。如果键已经存在，则更新其值。  |
+| `QVariant value(const QString &key, const QVariant &defaultValue = QVariant()) const` | 获取键对应的值，如果键不存在则返回默认值。    |
+| `bool contains(const QString &key) const`                    | 检查设置中是否包含某个键。                    |
+| `void remove(const QString &key)`                            | 删除指定的键及其值。                          |
+| `QStringList allKeys() const`                                | 返回所有键的列表。                            |
+| `void clear()`                                               | 清空所有设置。                                |
+| `void sync()`                                                | 将更改写入永久存储。                          |
+| `void beginGroup(const QString &prefix)`                     | 开始一个设置组，所有键将在该组中。            |
+| `void endGroup()`                                            | 结束一个设置组。                              |
+| `int beginReadArray(const QString &prefix)`                  | 开始读取一个数组，并返回数组的大小。          |
+| `void endArray()`                                            | 结束读取一个数组。                            |
+| `void setArrayIndex(int i)`                                  | 设置当前数组索引。                            |
+
+```cpp
+#include <QCoreApplication>
+#include <QSettings>
+#include <QDebug>
+
+int main(int argc, char *argv[])
+{
+    QCoreApplication app(argc, argv);
+
+    // 创建一个基于组织和应用名称的 QSettings 对象
+    QSettings settings("MyCompany", "MyApp");
+
+    // 设置一些键值对
+    settings.setValue("username", "john_doe");
+    settings.setValue("window/width", 800);
+    settings.setValue("window/height", 600);
+
+    // 读取这些值
+    QString username = settings.value("username", "default_user").toString();
+    int width = settings.value("window/width", 1024).toInt();
+    int height = settings.value("window/height", 768).toInt();
+
+    qDebug() << "Username:" << username;
+    qDebug() << "Window width:" << width;
+    qDebug() << "Window height:" << height;
+
+    // 检查某个键是否存在
+    if (settings.contains("username")) {
+        qDebug() << "Username is set.";
+    }
+
+    // 删除一个键
+    settings.remove("username");
+
+    // 开始一个设置组
+    settings.beginGroup("network");
+    settings.setValue("proxy", "proxy.example.com");
+    settings.setValue("port", 8080);
+    settings.endGroup();
+
+    // 读取设置组内的值
+    settings.beginGroup("network");
+    QString proxy = settings.value("proxy", "default_proxy").toString();
+    int port = settings.value("port", 80).toInt();
+    settings.endGroup();
+
+    qDebug() << "Proxy:" << proxy;
+    qDebug() << "Port:" << port;
+
+    // 开始读取一个数组
+    settings.beginWriteArray("recentFiles");
+    for (int i = 0; i < 5; ++i) {
+        settings.setArrayIndex(i);
+        settings.setValue("file", QString("file%1.txt").arg(i + 1));
+    }
+    settings.endArray();
+
+    // 读取数组中的值
+    int size = settings.beginReadArray("recentFiles");
+    for (int i = 0; i < size; ++i) {
+        settings.setArrayIndex(i);
+        QString file = settings.value("file").toString();
+        qDebug() << "Recent file:" << file;
+    }
+    settings.endArray();
+
+    // 获取所有键
+    QStringList keys = settings.allKeys();
+    qDebug() << "All keys:" << keys;
+
+    // 清空所有设置
+    settings.clear();
+
+    return 0;
+}
+```
+
+### 12.2 QVariant
+
+在 Qt 中，`QSettings::value` 方法返回的是一个 `QVariant` 对象。`QVariant` 是一个可以存储多种类型数据的类，因此需要将它转换成实际需要的类型。在你的示例中，`settings.value("proxy", "default_proxy")` 返回的是一个 `QVariant` 对象，但你需要一个 `QString` 类型的值，所以需要调用 `toString()` 方法来进行转换。
+
+```cpp
+#include <QCoreApplication>
+#include <QSettings>
+#include <QVariant>
+#include <QDebug>
+
+int main(int argc, char *argv[])
+{
+    QCoreApplication app(argc, argv);
+
+    // 创建一个基于组织和应用名称的 QSettings 对象
+    QSettings settings("MyCompany", "MyApp");
+
+    // 设置一些键值对
+    settings.setValue("username", "john_doe");
+    settings.setValue("window/width", 800);
+    settings.setValue("window/height", 600);
+    settings.setValue("isMaximized", true);
+
+    // 获取这些值并转换为相应的类型
+    QString username = settings.value("username").toString();
+    int width = settings.value("window/width").toInt();
+    int height = settings.value("window/height").toInt();
+    bool isMaximized = settings.value("isMaximized").toBool();
+
+    qDebug() << "Username:" << username;
+    qDebug() << "Window width:" << width;
+    qDebug() << "Window height:" << height;
+    qDebug() << "Is Maximized:" << isMaximized;
+
+    return 0;
+}
+```
+
+### 12.3 QString
+
+* 使用字符串的方法
+
+  ```cpp
+  QString::fromLocal8Bit("打开车站路径!")
+  ```
+
+### 12.4 QDir
+
+目录操作类
+
+| 方法名           | 功能描述                             | 返回值类型      | 返回值描述                                                |
+| ---------------- | ------------------------------------ | --------------- | --------------------------------------------------------- |
+| `exists`         | 检查目录是否存在。                   | `bool`          | 如果目录存在则返回 `true`，否则返回 `false`。             |
+| `absolutePath`   | 返回目录的绝对路径。                 | `QString`       | 返回目录的绝对路径。                                      |
+| `canonicalPath`  | 返回目录的规范路径。                 | `QString`       | 返回目录的规范路径，如果无法访问目录则返回空字符串。      |
+| `cd`             | 更改当前目录。                       | `bool`          | 如果成功更改目录则返回 `true`，否则返回 `false`。         |
+| `cdUp`           | 更改到上一级目录。                   | `bool`          | 如果成功更改到上一级目录则返回 `true`，否则返回 `false`。 |
+| `currentPath`    | 返回当前工作目录的路径。             | `QString`       | 返回当前工作目录的路径。                                  |
+| `entryList`      | 返回目录中所有条目的名称列表。       | `QStringList`   | 返回目录中所有条目的名称列表。                            |
+| `entryInfoList`  | 返回目录中所有条目的信息列表。       | `QFileInfoList` | 返回目录中所有条目的信息列表。                            |
+| `filePath`       | 返回目录中指定文件的完整路径。       | `QString`       | 返回目录中指定文件的完整路径。                            |
+| `isReadable`     | 检查目录是否可读。                   | `bool`          | 如果目录可读则返回 `true`，否则返回 `false`。             |
+| `mkdir`          | 创建一个子目录。                     | `bool`          | 如果成功创建子目录则返回 `true`，否则返回 `false`。       |
+| `mkpath`         | 创建一个路径，包括所有必需的子目录。 | `bool`          | 如果成功创建路径则返回 `true`，否则返回 `false`。         |
+| `nameFilters`    | 返回当前目录使用的名称过滤器。       | `QStringList`   | 返回名称过滤器列表。                                      |
+| `remove`         | 删除目录中的文件或子目录。           | `bool`          | 如果成功删除则返回 `true`，否则返回 `false`。             |
+| `rename`         | 重命名目录中的文件或子目录。         | `bool`          | 如果成功重命名则返回 `true`，否则返回 `false`。           |
+| `rmdir`          | 删除子目录。                         | `bool`          | 如果成功删除子目录则返回 `true`，否则返回 `false`。       |
+| `setCurrent`     | 设置当前工作目录。                   | `bool`          | 如果成功设置当前工作目录则返回 `true`，否则返回 `false`。 |
+| `setNameFilters` | 设置名称过滤器。                     | `void`          | 无返回值。                                                |
+| `dirName`        | 返回目录的名称（路径的最后一部分）。 | `QString`       | 返回目录名称。                                            |
+
+```cpp
+#include <QApplication>
+#include <QDir>
+#include <QDebug>
+
+int main(int argc, char *argv[])
+{
+    QApplication app(argc, argv);
+
+    // 创建一个 QDir 对象，指向某个路径
+    QDir dir("/home/user/Documents");
+
+    // 检查目录是否存在
+    if (dir.exists()) {
+        qDebug() << "Directory exists:" << dir.absolutePath();
+    } else {
+        qDebug() << "Directory does not exist.";
+    }
+
+    // 获取目录名
+    auto zm = dir.dirName();
+    qDebug() << "Directory name:" << zm;
+
+    // 更改当前目录
+    if (dir.cd("..")) {
+        qDebug() << "Changed to directory:" << dir.absolutePath();
+    } else {
+        qDebug() << "Failed to change directory.";
+    }
+
+    // 返回目录中所有条目的名称列表
+    QStringList entryList = dir.entryList();
+    qDebug() << "Directory entries:" << entryList;
+
+    // 创建一个子目录
+    if (dir.mkdir("NewFolder")) {
+        qDebug() << "Created NewFolder.";
+    } else {
+        qDebug() << "Failed to create NewFolder.";
+    }
+
+    // 删除一个子目录
+    if (dir.rmdir("NewFolder")) {
+        qDebug() << "Removed NewFolder.";
+    } else {
+        qDebug() << "Failed to remove NewFolder.";
+    }
+
+    // 设置名称过滤器
+    dir.setNameFilters(QStringList() << "*.txt" << "*.cpp");
+    qDebug() << "Filtered entries:" << dir.entryList();
+
+    return 0;
+}
+```
+
+## 13 布局设计
 
 #### gemotry几何形
 
@@ -2258,6 +2625,19 @@ build选择qmake
 2. 进入demo.ui的目录
 3. 使用命令 `uic demo.ui > ui_demo.h `生成到当前文件
 4. 可以移动到自动生成ui文件的目录，方便管理，默认在：`D:\software\Perfessional\qt5.14\myProject\CSM\build\Desktop_Qt_5_15_2_MSVC2019_64bit-Debug\CSM_autogen\include`
+
+==问题5：QString与std::string转换的乱码问题==
+
+```cpp
+std::string cstr;
+QString qstring;
+//从std::string 到QString
+qstring = QString(QString::fromLocal8Bit(cstr.c_str()));
+//从QString 到 std::string
+cstr = string((const char *)qstring.toLocal8Bit());
+```
+
+
 
 # qt creater操作
 

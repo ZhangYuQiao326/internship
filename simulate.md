@@ -166,6 +166,205 @@ Coroutine<void> MainWindow::init()
 }
 ```
 
+## 2 
+
+这段代码实现了一个名为 `CBISetParam` 的类，用于加载和初始化配置参数。下面是对代码的整体功能和每个函数的详细解释。
+
+### 整体功能
+`CBISetParam` 类负责从网络或文件加载特定配置参数，并将其存储在内部数据结构中。它还包括一些辅助函数来处理和初始化这些数据。
+
+### 详细解释
+
+#### CBISetParam 类的定义和构造函数
+
+```cpp
+#include "CBISetParam.h"
+
+struct CBISetParam::Impl
+{
+    ConfigCBISetParam data;
+    std::vector<std::string> paths;
+    WorkerQueue queue;
+};
+
+CBISetParam::CBISetParam()
+{
+    m_impl = new Impl();
+}
+
+CBISetParam::~CBISetParam()
+{
+    delete m_impl;
+}
+```
+- **`Impl`**：`CBISetParam` 类的私有实现，包含了 `ConfigCBISetParam` 数据、路径列表和一个工作队列。
+- **`CBISetParam::CBISetParam`**：构造函数，初始化 `m_impl` 成员。
+- **`CBISetParam::~CBISetParam`**：析构函数，删除 `m_impl` 成员，释放内存。
+
+#### init 函数
+
+```cpp
+Coroutine<bool> CBISetParam::init(uint16_t zmId, uint16_t index, int32_t timeout)
+{
+    auto protocol = NetworkConfigInterface::getInstance()->protocol();
+
+    constexpr uint32_t cmdType = CONFIG_STRUCT_STATION_CBISET_PARAM;
+    constexpr uint32_t rspType = CONFIG_STRUCT_STATION_CBISET_PARAM_RET;
+    stConfigIndexCmd cmd;
+    cmd.index = index;
+    ConfigCBISetParam configData;
+    bool success = co_await protocol->getResponse<cmdType, rspType>(protocol->channels(), zmId, 0, cmd, configData, timeout);
+    if (!success)
+    {
+        co_return false;
+    }
+
+    m_impl->data = configData;
+
+    initData();
+
+    co_return true;
+}
+```
+- **功能**：从网络加载配置参数。
+- **参数**：
+  - `zmId`：站点 ID。
+  - `index`：配置索引。
+  - `timeout`：超时时间。
+- **流程**：
+  - 获取协议实例。
+  - 定义命令和响应类型。
+  - 发送请求并等待响应，将结果存储在 `configData` 中。
+  - 如果成功，将 `configData` 存储在 `m_impl->data` 中，并调用 `initData` 进行初始化。
+
+#### load 函数
+
+```cpp
+Coroutine<bool> CBISetParam::load(const std::string &zm, uint16_t index)
+{
+    auto pFileTr = FileConfigInterface::getInstance();
+    std::string dir = "车站配置文件\\" + zm + "\\jk\\CBISet" + std::to_string(index) + ".ini";
+    auto path = pFileTr->path() + dir;
+    if (m_impl->paths.empty())
+    {
+        m_impl->paths.emplace_back(dir);
+    }
+    m_impl->data = co_await co_sync(&m_impl->queue, &CBISetParam::loadFile, this, std::ref(path));
+
+    initData();
+
+    co_return true;
+}
+```
+- **功能**：从文件加载配置参数。
+- **参数**：
+  - `zm`：站点名称。
+  - `index`：配置索引。
+- **流程**：
+  - 构建文件路径。
+  - 如果路径列表为空，添加路径。
+  - 使用 `co_sync` 协程同步调用 `loadFile` 函数加载文件，并将结果存储在 `m_impl->data` 中。
+  - 调用 `initData` 进行初始化。
+
+#### path 函数
+
+```cpp
+const std::vector<std::string> &CBISetParam::path() const
+{
+    return m_impl->paths;
+}
+```
+- **功能**：返回路径列表。
+- **返回值**：包含路径的向量。
+
+#### GetData 函数
+
+```cpp
+const ConfigCBISetParam &CBISetParam::GetData() const
+{
+    return m_impl->data;
+}
+```
+- **功能**：返回配置数据。
+- **返回值**：配置数据对象。
+
+#### loadFile 函数
+
+```cpp
+ConfigCBISetParam CBISetParam::loadFile(const std::string &path)
+{
+    ConfigCBISetParam param;
+
+    IniUtils ini;
+    ini.load(path);
+
+    param.linkStatus = loadLinkStatus(ini);
+    param.explainTypes = loadExplainTypes(ini);
+
+    {
+        auto count = atoi(ini.getKeyValue("联锁码位", "总数").c_str());
+        for (int i = 0; i < count; i++)
+        {
+            auto params = StringUtils::split(ini.getKeyValue("联锁码位", std::to_string(i + 1)));
+            assert(params.size() >= 4);
+
+            auto &data = param.codeBits.emplace_back();
+
+            size_t pos = 0;
+            data.name = params[pos++];
+            data.kglAd = atoi(params[pos++].c_str());
+            data.dkglAd = atoi(params[pos++].c_str());
+            data.explainCode = atoi(params[pos++].c_str());
+        }
+    }
+
+    return param;
+}
+```
+- **功能**：从指定文件加载配置数据。
+- **参数**：
+  - `path`：文件路径。
+- **流程**：
+  - 创建 `ConfigCBISetParam` 对象 `param`。
+  - 使用 `IniUtils` 加载文件。
+  - 加载链接状态和解释类型。
+  - 获取联锁码位的总数，遍历每个联锁码位，解析参数并存储在 `param` 的 `codeBits` 向量中。
+
+#### initData 函数
+
+```cpp
+void CBISetParam::initData()
+{
+    initExplain(m_impl->data.explainTypes);
+}
+```
+- **功能**：初始化解释类型数据。
+- **流程**：
+  - 调用 `initExplain`，传入解释类型数据进行初始化。
+
+### 总结
+- **CBISetParam 类** 负责管理配置参数的加载和初始化。
+- **构造函数和析构函数**：负责资源的分配和释放。
+- **init 和 load 函数**：从网络或文件加载配置数据。
+- **path 和 GetData 函数**：提供访问路径列表和数据的方法。
+- **loadFile 函数**：具体从文件解析配置数据。
+- **initData 函数**：初始化解释类型数据。
+
+通过这些函数，`CBISetParam` 类实现了从不同来源（网络和文件）加载配置参数，并对这些参数进行处理和初始化。
 
 
-![image-20240516111859329](https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202405161118509.png)
+
+# 3 组包
+
+[配置文件地址](D:\Work\333\bins\配置文件\车站配置文件\ZJJ\jk)
+
+读取配置插件：dlls - fileInterface - station - jk
+
+
+
+```cpp
+
+```
+
+
+
