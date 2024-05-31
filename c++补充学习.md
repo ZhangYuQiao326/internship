@@ -129,16 +129,149 @@ int main() {
 
 下面是各个固定宽度整数类型表示的十进制范围的表格：
 
-| 类型       | 描述               | 有符号/无符号 | 最小值                     | 最大值                     |
-| ---------- | ------------------ | ------------- | -------------------------- | -------------------------- |
-| `int8_t`   | 有符号的 8 位整数  | 有符号        | -128                       | 127                        |
-| `uint8_t`  | 无符号的 8 位整数  | 无符号        | 0                          | 255                        |
-| `int16_t`  | 有符号的 16 位整数 | 有符号        | -32,768                    | 32,767                     |
-| `uint16_t` | 无符号的 16 位整数 | 无符号        | 0                          | 65,535                     |
-| `int32_t`  | 有符号的 32 位整数 | 有符号        | -2,147,483,648             | 2,147,483,647              |
-| `uint32_t` | 无符号的 32 位整数 | 无符号        | 0                          | 4,294,967,295              |
-| `int64_t`  | 有符号的 64 位整数 | 有符号        | -9,223,372,036,854,775,808 | 9,223,372,036,854,775,807  |
-| `uint64_t` | 无符号的 64 位整数 | 无符号        | 0                          | 18,446,744,073,709,551,615 |
+| 类型       | 描述                                | 有符号/无符号 | 最小值                     | 最大值                     |
+| ---------- | ----------------------------------- | ------------- | -------------------------- | -------------------------- |
+| `int8_t`   | 有符号的 8 位整数                   | 有符号        | -128                       | 127                        |
+| `uint8_t`  | 无符号的 8 位整数(存二进制和存Ox12) | 无符号        | 0                          | 255                        |
+| `int16_t`  | 有符号的 16 位整数                  | 有符号        | -32,768                    | 32,767                     |
+| `uint16_t` | 无符号的 16 位整数                  | 无符号        | 0                          | 65,535                     |
+| `int32_t`  | 有符号的 32 位整数                  | 有符号        | -2,147,483,648             | 2,147,483,647              |
+| `uint32_t` | 无符号的 32 位整数                  | 无符号        | 0                          | 4,294,967,295              |
+| `int64_t`  | 有符号的 64 位整数                  | 有符号        | -9,223,372,036,854,775,808 | 9,223,372,036,854,775,807  |
+| `uint64_t` | 无符号的 64 位整数                  | 无符号        | 0                          | 18,446,744,073,709,551,615 |
+
+* 关于uint8_t
+
+  `std::vector<uint8_t>` 存储的是无符号 8 位整数类型 (`uint8_t`) 的数据，这些数据实际上是以二进制形式存储的。无论您向 `std::vector<uint8_t>` 中添加的是十六进制表示的整数、二进制表示的整数还是其他格式的数据，它们最终都会以二进制形式存储在内存中。
+
+  在 C++ 中，整数常量可以以十进制、十六进制或八进制表示。当您使用十六进制表示法时，例如 `0x12`，编译器会将其解释为一个整数值，并以二进制形式存储在内存中。同样，二进制表示法如 `"1010"` 也会被解释为整数值，并以二进制形式存储。
+
+  因此，尽管您可能在代码中使用十六进制或二进制表示整数，但在内存中，它们实际上都是以二进制形式存储的。由于 `std::vector<uint8_t>` 存储的是字节，因此它可以容纳任何形式的数据，包括以十六进制或二进制表示的整数。
+
+  ```cpp
+  #include <iostream>
+  #include <vector>
+  #include <string>
+  #include <iomanip>
+  
+  // std::vector<uint8_t> convertProtocolBodyToPacket(const std::string& protocolBody) {
+  std::vector<uint8_t> convertProtocolBodyToPacket(std::vector<uint8_t> vec){
+      uint8_t header = 0x12;
+      std::vector<uint8_t> protocolPacket;
+      protocolPacket.push_back(header);
+  
+      uint8_t bodyByte = 0;
+      int bitCount = 0;  // 记录当前 bodyByte 中已经填充了多少位
+  	// 二进制为数字
+      for (auto d : vec) {
+          bodyByte = (bodyByte << 1) | d;
+          bitCount++;
+  
+          if (bitCount == 8) {  // 检查是否已填满 8 位
+              protocolPacket.push_back(bodyByte);
+              bodyByte = 0;
+              bitCount = 0;
+          }
+      }
+      
+      // 二进制为字符
+      //for (char bit : protocolBody) {
+      //    bodyByte = (bodyByte << 1) | (bit - '0');
+      //    bitCount++;
+  
+      //    if (bitCount == 8) {  // 检查是否已填满 8 位
+      //        protocolPacket.push_back(bodyByte);
+      //        bodyByte = 0;
+      //        bitCount = 0;
+      //    }
+      //}
+  
+      // 如果还有未处理的位，将剩余部分写入 protocolPacket
+      if (bitCount > 0) {
+          bodyByte <<= (8 - bitCount);  // 左移剩余的位，使其成为完整的字节
+          protocolPacket.push_back(bodyByte);
+      }
+  
+      return protocolPacket;
+  }
+  
+  int main1() {
+      std::string body = "10011010";
+      std::vector<uint8_t> data = { 0,1,0,0,1,0,1,1 };
+      auto vec = convertProtocolBodyToPacket(data);
+  
+      // 以十六进制格式输出
+      std::cout << "Protocol Packet: ";
+      for (auto i : vec) {
+          std::cout << "0x" << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(i) << " ";
+      }
+      std::cout << std::endl;
+  
+      return 0;
+  }
+  
+  ```
+
+  在上述示例中，将二进制数据转换为十进制是为了将其转换为字节（`uint8_t` 类型）。在封装协议时，我们通常将数据表示为字节的形式，因为在字节级别上进行数据传输是一种常见的做法。
+
+  具体来说，在封装协议体时，我们需要将二进制数据分组成字节（8 位）的形式，并将每个字节添加到协议数据中。由于 C++ 中没有直接表示二进制字节的数据类型，因此我们首先将二进制数据转换为十进制数，然后再将其强制转换为 `uint8_t` 类型，最终存储到协议数据中。
+
+  这种方法可以确保协议体中的每个字节都正确地表示为一个无符号的 8 位整数，并且与字节级别的数据传输相匹配。当然，您也可以直接将二进制数据存储为 `char` 类型或 `uint8_t` 类型的数组，但在这种情况下，您需要考虑如何处理不足一个字节的情况。
+
+  
+
+以下是一个示例代码，演示了如何封装具有协议头和协议体的数据：
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <cstdint>
+
+// 定义协议头和协议体的数据
+const uint8_t protocolHeader = 0x12;
+const std::string protocolBody = "10011010";
+
+// 封装协议数据
+std::vector<uint8_t> packageProtocol() {
+    std::vector<uint8_t> protocolPacket;
+
+    // 将协议头添加到协议数据中
+    protocolPacket.push_back(protocolHeader);
+
+    // 将协议体的二进制数据转换为十进制数，并添加到协议数据中
+    uint8_t bodyByte = 0;
+    for (char bit : protocolBody) {
+        bodyByte = (bodyByte << 1) | (bit - '0');
+        if (bodyByte & 0x80) {
+            protocolPacket.push_back(bodyByte);
+            bodyByte = 0;
+        }
+    }
+
+    // 如果还有剩余的字节未添加，则添加到协议数据中
+    if (bodyByte != 0) {
+        protocolPacket.push_back(bodyByte);
+    }
+
+    return protocolPacket;
+}
+
+int main() {
+    // 封装协议
+    std::vector<uint8_t> protocolPacket = packageProtocol();
+
+    // 输出封装后的协议数据
+    std::cout << "Protocol Packet: ";
+    for (uint8_t byte : protocolPacket) {
+        std::cout << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << " ";
+    }
+    std::cout << std::endl;
+
+    return 0;
+}
+```
+
+在这个示例中，我们首先定义了协议头和协议体的数据。然后，通过 `packageProtocol` 函数将协议数据封装起来。在封装过程中，我们将协议头直接添加到协议数据中，并将协议体的二进制数据转换为十进制数，然后将其以字节为单位添加到协议数据中。最后，我们在 `main` 函数中调用 `packageProtocol` 函数，并输出封装后的协议数据。
 
 ## 2 函数调用栈
 
@@ -563,3 +696,90 @@ void *DllUtils::dllSymbol(void *dll, const char *funcName)
 }
 ```
 
+
+
+# 位运算
+
+| 运算   | 功能                                                         | 作用                         |
+| ------ | ------------------------------------------------------------ | ---------------------------- |
+| 按位&  | `5 & 3`的二进制表示是 `0101 & 0011`，结果是 `0001`，即 `1    | 获取低8位字节，` val & 0xFF` |
+| 按位\| | `5 |3` 的二进制表示是 `0101 |0011`，结果是 `0111`，即 `7`    | 字节左移，加上一位           |
+| 异或^  | 二进制位不同时为1，5 ^ 3` 的二进制表示是 `0101 ^ 0011`，结果是 `0110`，即 `6 |                              |
+| 取反~  | ~5` 的二进制表示是 `~0101`，结果是 `1010                     |                              |
+| 左移<< | 右侧用0填充                                                  |                              |
+| 右移>> | 左侧根据符号位填充（对无符号数`uint8_t`则用0填充)            |                              |
+|        |                                                              |                              |
+
+* 处理一串二进制数据，以字节处理
+
+  ```cpp
+  uint8_t bodyByte = 0; // 临时处理字节
+  int bitCount = 0;  // 记录当前 bodyByte 中已经填充了多少位
+  
+  for (auto d : vec) {
+      bodyByte = (bodyByte << 1) | d;  // 左移，加入一位
+      bitCount++;
+  
+      if (bitCount == 8) {  // 检查是否已填满 8 位
+          protocolPacket.push_back(bodyByte);
+          bodyByte = 0;
+          bitCount = 0;
+      }
+  }
+  ```
+
+* 获取高低字节
+
+![image-20240530152550944](https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202405301525216.png)
+
+```cpp
+uint16_t value = 305;
+// 低字节
+uint8_t lowerByte = static_cast<uint8_t>(value & 0xFF);
+// 高字节
+uint8_t highByte = static_cast<uint8_t>(value >> 8 & 0xFF);
+
+     00000001 00110001  // dataSegmentLength (305 in binary)
+&    00000000 11111111  // 0xFF (255 in binary)
+---------------------
+     00000000 00110001  // Result: only the low 8 bits are preserved
+
+```
+
+* 打印16进制
+
+  ```cpp
+  #include <iostream>
+  #include <vector>
+  #include <iomanip> // for std::hex, std::setw, and std::setfill
+  
+  int main() {
+      // 定义并初始化一个 vector<uint8_t>
+      std::vector<uint8_t> vec = {0x1, 0xA, 0xFF, 0xB, 0x10};
+  
+      // 遍历 vec 中的每个元素并打印为16进制格式
+      for (auto i : vec) {
+          std::cout << "0x" 
+                    << std::hex << std::setw(2) << std::setfill('0') 
+                    << static_cast<int>(i) << " ";
+      }
+  
+      // 打印换行符
+      std::cout << std::endl;
+  
+      return 0;
+  }
+  
+  ```
+
+  `"0x"`：打印每个值的前缀，表示这是一个十六进制数。
+
+  `std::hex`：将输出格式设置为十六进制。
+
+  `std::setw(2)`：设置输出宽度为2个字符。
+
+  `std::setfill('0')`：用 `0` 填充不足的宽度。
+
+  `static_cast<int>(i)`：将 `i` 强制转换为 `int` 类型。这是因为 `uint8_t` 实际上是一个 `unsigned char`，直接输出时会被解释为字符。转换为 `int` 后，输出其整数值。
+
+  `" "`：在每个十六进制数之间添加一个空格

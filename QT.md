@@ -602,8 +602,12 @@ public:
         
         // 设置表头
         QStringList headers;
-        headers << "序号" << "名称" << "状态";
+        headers << QString::fromlocal8bit("序号") << QString::fromlocal8bit("名称") << QString::fromlocal8bit("状态");
         tableWidget->setHorizontalHeaderLabels(headers);
+        
+        // 插入行
+        int row = tableWidget.rowCount();
+        tableWidget.insertRow(row);
         
         // 填充表格项
         tableWidget->setItem(0, 0, new QTableWidgetItem("1"));
@@ -631,7 +635,7 @@ int main(int argc, char *argv[]) {
 
 ```
 
-####  5.3.1 单元格大小
+####  5.3.1 单元格设计
 
 下面是`ResizeMode`参数的几种常见取值及其作用：
 
@@ -661,68 +665,192 @@ setSectionResizeMode(QHeaderView::ResizeToContents);
 tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
 ```
 
+#### 5.3.2 单元格操作
+
+```cpp
+// 创建单元格
+QTableWidgetItem *item0 = new QTableWidgetItem("Item 1");
+tableWidget.setItem(row, 0, item0);
+
+// 获取存在的单元格
+QTableWidgetItem* item = table->item(row, column);
+```
 
 
 
+| 接口                                       | 描述                                           |
+| ------------------------------------------ | ---------------------------------------------- |
+| `setText(const QString &text)`             | 设置单元格的文本内容为给定的字符串 `text`。    |
+| `text() const`                             | 返回单元格当前的文本内容。                     |
+| `setData(int role, const QVariant &value)` | 设置单元格的特定角色的数据为给定的值 `value`。 |
+| `data(int role) const`                     | 返回单元格的特定角色的数据。                   |
+| `column() const`                           | 返回单元格所在的列索引。                       |
+| `row() const`                              | 返回单元格所在的行索引。                       |
 
-* 创建新的表格
+`setText` 和 `setData` 是 `QTableWidgetItem` 中的两个不同方法，它们在功能和用法上有一些区别。
 
-  ```cpp
-  QTableWidget *table=new QTableWidget();
-  ```
+```cpp
+QTableWidgetItem *item = new QTableWidgetItem();
+item->setText("Hello, World!");
+// 等同于
+item->setData(Qt::DisplayRole, "Hello, World!");
+```
 
-* 设置列数,超过的列数无法显示
+```cpp
+QTableWidgetItem *item = new QTableWidgetItem();
+item->setData(Qt::DisplayRole, "Hello, World!"); // 设置显示文本
+item->setData(Qt::DecorationRole, QIcon("icon.png")); // 设置图标
+item->setData(Qt::ToolTipRole, "This is a tooltip"); // 设置工具提示
+```
 
-  ```cpp
-   table->setColumnCount(3);//设置3列
-  ```
+---------
 
-* 设置行数
 
-  ```cpp
-  table->setRowCount(5);//设置5行
-  ```
 
-* 设置表头(先设置表格行列数，在设置表头)
+| 接口                                  | 描述                                                   |
+| ------------------------------------- | ------------------------------------------------------ |
+| `setBackground(const QBrush &brush)`  | 设置单元格的背景为给定的刷子 `brush`。                 |
+| `background() const`                  | 返回单元格的背景刷子。                                 |
+| `setForeground(const QBrush &brush)`  | 设置单元格的前景（文本）颜色为给定的刷子 `brush`。     |
+| `foreground() const`                  | 返回单元格的前景刷子。                                 |
+| `setFont(const QFont &font)`          | 设置单元格的字体为给定的字体 `font`。                  |
+| `font() const`                        | 返回单元格的字体。                                     |
+| `setFlags(Qt::ItemFlags flags)`       | 设置单元格的标志（如是否可编辑、可选等）。             |
+| `flags() const`                       | 返回单元格的标志。                                     |
+| `setTextAlignment(int alignment)`     | 设置单元格文本的对齐方式（如左对齐、右对齐等）。       |
+| `textAlignment() const`               | 返回单元格文本的对齐方式。                             |
+| `setCheckState(Qt::CheckState state)` | 设置单元格的复选框状态（如选中、未选中、部分选中）。   |
+| `checkState() const`                  | 返回单元格的复选框状态。                               |
+| `setIcon(const QIcon &icon)`          | 设置单元格的图标为给定的图标 `icon`。                  |
+| `icon() const`                        | 返回单元格的图标。                                     |
+| `setToolTip(const QString &tip)`      | 设置单元格的工具提示为给定的字符串 `tip`。             |
+| `toolTip() const`                     | 返回单元格的工具提示文本。                             |
+| `setStatusTip(const QString &tip)`    | 设置单元格的状态提示为给定的字符串 `tip`。             |
+| `statusTip() const`                   | 返回单元格的状态提示文本。                             |
+| `setWhatsThis(const QString &text)`   | 设置单元格的 "What's This" 文本为给定的字符串 `text`。 |
+| `whatsThis() const`                   | 返回单元格的 "What's This" 文本。                      |
+| `setSizeHint(const QSize &size)`      | 设置单元格的尺寸提示为给定的尺寸 `size`。              |
+| `sizeHint() const`                    | 返回单元格的尺寸提示。                                 |
+| `setSelected(bool select)`            | 设置单元格的选中状态为 `select`。                      |
+| `isSelected() const`                  | 返回单元格的选中状态。                                 |
+| `setEditable(bool editable)`          | 设置单元格是否可编辑。                                 |
+| `isEditable() const`                  | 返回单元格是否可编辑。                                 |
 
-  ```cpp
-  QStringList header;  //QString类型的List容器
-  header<<"学号"<<"姓名"<<"性别";//设置内容是学号、姓名、性别
-  table->setHorizontalHeaderLabels(header);//设置表头内容
-  ```
+#### 5.2.4 单元格信号
 
-* 插入一行空数据
+在 Qt 的 `QTableWidget` 中，单元格可以响应多种用户操作。以下是一些常见的单元格操作和对应的信号：
 
-  ```cpp
-  // 序号从0开始
-  int row = tableWidget.rowCount();
-  tableWidget.insertRow(row);
-  ```
+| 操作                           | 描述                                                 | 信号                                                         |
+| ------------------------------ | ---------------------------------------------------- | ------------------------------------------------------------ |
+| 单击                           | 用户单击单元格。                                     | `cellClicked(int row, int column)`                           |
+| 双击                           | 用户双击单元格。                                     | `cellDoubleClicked(int row, int column)`                     |
+| 编辑开始                       | 用户开始编辑单元格内容。                             | `cellActivated(int row, int column)`                         |
+| 编辑结束                       | 用户完成对单元格的编辑。                             | `cellChanged(int row, int column)`                           |
+| 单元格被选中                   | 单元格被选中（可能是通过鼠标或键盘操作）。           | `cellEntered(int row, int column)`                           |
+| 单元格被选择                   | 用户选择单元格（可能是通过鼠标拖动选择多个单元格）。 | `itemSelectionChanged()`                                     |
+| 进入单元格（悬停）             | 鼠标悬停在单元格上。                                 | `cellEntered(int row, int column)`                           |
+| 单元格获得焦点                 | 单元格获得焦点。                                     | `cellActivated(int row, int column)`                         |
+| 单元格文本编辑完成（失去焦点） | 用户完成对单元格文本的编辑并离开该单元格。           | `itemChanged(QTableWidgetItem *item)`                        |
+| 右键点击单元格                 | 用户右键点击单元格，通常用于显示上下文菜单。         | 通常通过 `QTableWidget::customContextMenuRequested` 信号处理 |
+| 拖动单元格                     | 用户拖动单元格（拖放操作）。                         | `cellPressed(int row, int column)`                           |
 
-* 每个单元格设置内容
 
-  ```cpp
-  QTableWidgetItem *item0 = new QTableWidgetItem("Item 1");
-  QTableWidgetItem *item1 = new QTableWidgetItem("Item 2");
-  QTableWidgetItem *item2 = new QTableWidgetItem("Item 3");
-  tableWidget.setItem(row, 0, item0);
-  tableWidget.setItem(row, 1, item1);
-  tableWidget.setItem(row, 2, item2);
-  ```
 
-* 内容不可编辑
+```cpp
+#include <QApplication>
+#include <QTableWidget>
+#include <QVBoxLayout>
+#include <QWidget>
+#include <QDebug>
 
-  ```cpp
-   table->setEditTriggers(QAbstractItemView::NoEditTriggers); //设置表格内容不可编辑
-  ```
+class MainWidget : public QWidget
+{
+    Q_OBJECT
 
-  
+public:
+    MainWidget(QWidget *parent = nullptr);
 
-* 显示表格
+private slots:
+    void onCellClicked(int row, int column);
+    void onCellDoubleClicked(int row, int column);
+    void onCellEntered(int row, int column);
+    void onCellChanged(int row, int column);
 
-  ```cpp
-  table.show()
-  ```
+private:
+    QTableWidget *table;
+};
+
+MainWidget::MainWidget(QWidget *parent)
+    : QWidget(parent)
+{
+    table = new QTableWidget(5, 5, this);
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->addWidget(table);
+    setLayout(layout);
+
+    // 设置所有单元格的默认值为0
+    for (int row = 0; row < table->rowCount(); ++row) {
+        for (int column = 0; column < table->columnCount(); ++column) {
+            table->setItem(row, column, new QTableWidgetItem("0"));
+        }
+    }
+
+    // 连接信号到槽函数
+    connect(table, &QTableWidget::cellClicked, this, &MainWidget::onCellClicked);
+    connect(table, &QTableWidget::cellDoubleClicked, this, &MainWidget::onCellDoubleClicked);
+    connect(table, &QTableWidget::cellEntered, this, &MainWidget::onCellEntered);
+    connect(table, &QTableWidget::cellChanged, this, &MainWidget::onCellChanged);
+}
+
+void MainWidget::onCellClicked(int row, int column)
+{
+    qDebug() << "Cell clicked at (" << row << ", " << column << ")";
+}
+
+void MainWidget::onCellDoubleClicked(int row, int column)
+{
+    qDebug() << "Cell double-clicked at (" << row << ", " << column << ")";
+}
+
+void MainWidget::onCellEntered(int row, int column)
+{
+    qDebug() << "Cell entered at (" << row << ", " << column << ")";
+}
+
+void MainWidget::onCellChanged(int row, int column)
+{
+    qDebug() << "Cell changed at (" << row << ", " << column << ")";
+}
+
+int main(int argc, char *argv[])
+{
+    QApplication a(argc, argv);
+    MainWidget w;
+    w.show();
+    return a.exec();
+}
+```
+
+```cpp
+// 双击 
+connect(ui->tableWidget_kglzt, &QTableWidget::cellDoubleClicked, this, &CBIEmulatorForm::on_CellDoubleClicked);
+// slots
+void CBIEmulatorForm::on_CellDoubleClicked(int row, int column)
+{
+    // 第五列双击有效
+    if (column == 4) {
+        QTableWidgetItem* item = ui->tableWidget_kglzt->item(row, column);
+        if (item->text() == "0") {
+            item->setText("1");
+        }
+        else if (item->text() == "1") {
+            item->setText("0");
+        }
+    }
+}
+```
+
+
 
 * 设置表头字体属性
 
@@ -732,11 +860,7 @@ tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
   table->horizontalHeader()->setFont(font);//把字体变量属性加进表头中
   ```
 
-* 设置表头的内容充满整个表格宽度
-
-  ```cpp
-  table->horizontalHeader()->setStretchLastSection(true); //设置表头充满表格的宽度
-  ```
+  
 
 * 设置表头高度
 
@@ -1387,64 +1511,86 @@ connect(ui->actionnew,&QAction::triggered,[=](){
 
 ### 7.2 标准对话框
 
-![image-20230720145353137](C:\Users\zhang\AppData\Roaming\Typora\typora-user-images\image-20230720145353137.png)
-
 #### 7.2.1 消息对话框
 
-* 错误对话框
-
-![image-20230720145932970](C:\Users\zhang\AppData\Roaming\Typora\typora-user-images\image-20230720145932970.png)
+| 类型     | 函数                                                         |
+| -------- | ------------------------------------------------------------ |
+| 显示消息 | `QMessageBox::information(this, "Title", "This is an information message.");` |
+| 警告     | `QMessageBox::warning(this, "Title", "This is a warning message.");` |
+| 错误     | `QMessageBox::critical(this, "Title", "This is an error message.");` |
+| 询问选择 | `reply = QMessageBox::question(this, "Title", "Do you want to continue?", QMessageBox::Yes |QMessageBox::No);` |
+| 自定义   | 自定义无图标显示框                                           |
 
 ```cpp
-#include<QMessageBox>
-
-connect(ui->actionwrong,&QAction::triggered,[=]{
-        QMessageBox::critical(this,"critical","错误！");
-    });
+// 无图标
+void CBIEmulatorForm::showMessage(QString text, QString title)
+{
+    QMessageBox msgBox;
+    msgBox.setWindowTitle(title);
+    msgBox.setText(text);
+    msgBox.setIcon(QMessageBox::NoIcon); // 设置图标为 NoIcon
+    msgBox.setStandardButtons(QMessageBox::Ok);
+    msgBox.exec();
+}
 ```
 
-* 信息对话框
 
-![image-20230720150629588](C:\Users\zhang\AppData\Roaming\Typora\typora-user-images\image-20230720150629588.png)
 
 ```cpp
-connect(ui->actioninfo,&QAction::triggered,[=]{
-        QMessageBox::information(this,"info"," 提示！");
-    });
-```
+#include <QMessageBox>
 
+class MyWidget : public QWidget {
+    Q_OBJECT
 
+public:
+    MyWidget(QWidget *parent = nullptr) : QWidget(parent) {
+        QPushButton *infoButton = new QPushButton("Show Information", this);
+        infoButton->setGeometry(10, 10, 150, 30);
+        connect(infoButton, &QPushButton::clicked, this, &MyWidget::showInformation);
 
-* 提问对话框
+        QPushButton *warnButton = new QPushButton("Show Warning", this);
+        warnButton->setGeometry(10, 50, 150, 30);
+        connect(warnButton, &QPushButton::clicked, this, &MyWidget::showWarning);
 
-![image-20230720150640111](C:\Users\zhang\AppData\Roaming\Typora\typora-user-images\image-20230720150640111.png)
+        QPushButton *errorButton = new QPushButton("Show Error", this);
+        errorButton->setGeometry(10, 90, 150, 30);
+        connect(errorButton, &QPushButton::clicked, this, &MyWidget::showError);
 
-```cpp
-connect(ui->actionchoose,&QAction::triggered,[=]{
-    QMessageBox::question(this,      // 显示在当前窗口
-                          "ques",    // 对话框名
-                          "做出选择！", // 显示信息
-                          QMessageBox::Save |QMessageBox::Cancel, // 选项名字
-                          QMessageBox::Cancel); // 默认关联回车键
-    });
-```
+        QPushButton *questionButton = new QPushButton("Ask Question", this);
+        questionButton->setGeometry(10, 130, 150, 30);
+        connect(questionButton, &QPushButton::clicked, this, &MyWidget::askQuestion);
+    }
 
-第四个参数：
+private slots:
+    void showInformation() {
+        QMessageBox::information(this, "Information", "This is an information message.");
+    }
 
-<img src="C:\Users\zhang\AppData\Roaming\Typora\typora-user-images\image-20230720150434053.png" alt="image-20230720150434053" style="zoom: 80%;" />
+    void showWarning() {
+        QMessageBox::warning(this, "Warning", "This is a warning message.");
+    }
 
-```cpp
-// 提问对话框 最后 返回的是 做出的选项
-// 使用
-connect(ui->actionchoose,&QAction::triggered,[=]{
-        if(QMessageBox::Save ==  QMessageBox::question(this,"ques","做出选择！",QMessageBox::Save | QMessageBox::Cancel,QMessageBox::Cancel))
-        {
-           qDebug()<<"保存完毕！";
-        }else{
-           qDebug()<<"取消成功！";
+    void showError() {
+        QMessageBox::critical(this, "Error", "This is an error message.");
+    }
+
+    void askQuestion() {
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::question(this, "Question", "Do you want to continue?",
+                                      QMessageBox::Yes | QMessageBox::No);
+        if (reply == QMessageBox::Yes) {
+            QMessageBox::information(this, "Answer", "You chose Yes.");
+        } else {
+            QMessageBox::information(this, "Answer", "You chose No.");
         }
-    });
+    }
+};
+
 ```
+
+
+
+
 
 #### 7.2.2 颜色对话框
 
@@ -1455,8 +1601,6 @@ connect(ui->actioncolor,&QAction::triggered,[=]{
     });
 
 ```
-
-<img src="C:\Users\zhang\AppData\Roaming\Typora\typora-user-images\image-20230720170345210.png" alt="image-20230720170345210" style="zoom:67%;" />
 
 #### 7.3.3 文件对话框
 
@@ -2278,6 +2422,25 @@ int main(int argc, char *argv[])
   QString::fromLocal8Bit("打开车站路径!")
   ```
 
+* 模板字符串
+
+  ```cpp
+  QString jkPath = QString("%1/jk/%2%3.ini").arg(path).arg(QString::fromLocal8Bit(name.c_str())).arg(i);
+  ```
+
+  | 类型       | 由QString 转换方法                  | 转换为 QString 方法                      |
+  | ---------- | ----------------------------------- | ---------------------------------------- |
+  | int        | `str.toInt()`                       | `QString::number(intValue)`              |
+  | double     | `str.toDouble()`                    | `QString::number(doubleValue)`           |
+  | QByteArray | `str.toUtf8()`                      | `QString::fromUtf8(byteArray)`           |
+  | QDateTime  | `str.fromString()`                  | `toString()`                             |
+  | uint8_t    | `static_cast<uint8_t>(str.toInt())` | `QString::number(static_case<int>(val))` |
+  |            |                                     |                                          |
+  |            |                                     |                                          |
+  |            |                                     |                                          |
+
+  
+
 ### 12.4 QDir
 
 目录操作类
@@ -2581,7 +2744,7 @@ int main()
 解决方法： 点击项目，将[shadow](https://so.csdn.net/so/search?q=shadow&spm=1001.2101.3001.7020) build里的✔取消；此方法是改变项目构建（build）的位置，取消勾选后会在项目内部构建
 结果：成功解决问题
 
-![image-20240428172412623](https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202404281724230.png)
+<img src="https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202404281724230.png" alt="image-20240428172412623" style="zoom:50%;" />
 
 ==问题2：**在exe可执行文件目录添加qt依赖的动态库**==
 
@@ -2613,7 +2776,7 @@ int main()
 
 build选择qmake
 
-![image-20240521164313422](https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202405211643847.png)
+<img src="https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202405211643847.png" alt="image-20240521164313422" style="zoom:50%;" />
 
 ==问题4：无法自动生成ui_xx_xx.h头文件==
 
@@ -2637,23 +2800,31 @@ qstring = QString(QString::fromLocal8Bit(cstr.c_str()));
 cstr = string((const char *)qstring.toLocal8Bit());
 ```
 
+==问题6： 1104无法打开动态库dll、exe==
+
+exe: 进程未关闭，找到任务管理器关闭线程
+
+dll：后台关闭进程，清理缓存，重新生成
 
 
-# qt creater操作
 
-## 快捷键
+# qtcreater操作
+
+## 1 快捷键
 
 | 快捷键         | 功能            |
 | -------------- | --------------- |
 | ctrl + alt + m | 打开/关闭菜单栏 |
 
-## 项目管理
+## 2 项目管理
 
-创建子目录：
+### 2.1 创建子目录
 
 工程文件夹下创建目录 -->  creater中创建新文件 --> 设置文件存放的位置为新目录中 --> 自动识别cmake
 
 --> 注意添加cmakelist的`include_directories`识别头文件路径
+
+
 
 
 
