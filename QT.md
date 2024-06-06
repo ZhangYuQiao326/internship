@@ -554,6 +554,8 @@ setCentralWidget(edit);
 | `clear()`                                                    | 清空 ComboBox 中的所有项。                                   |
 | `setCurrentIndex(int index)`                                 | 将当前选中项设置为指定索引处的项。                           |
 | `currentIndex()`                                             | 返回当前选中项的索引。                                       |
+| `currentText()`                                              | 返回当前选中的项的文本。                                     |
+| `currentData()`                                              | 返回当前选中的项的关联数据（如果存在）                       |
 | `count()`                                                    | 返回 ComboBox 中的项数。                                     |
 | `itemText(int index)`                                        | 返回指定索引处项的文本。通过ui添加的值                       |
 | `itemData(int index)`                                        | 返回指定索引处项关联的自定义数据。                           |
@@ -2416,10 +2418,12 @@ int main(int argc, char *argv[])
 
 ### 12.3 QString
 
-* 使用字符串的方法
+* std::string  ->  QString
 
   ```cpp
   QString::fromLocal8Bit("打开车站路径!")
+      
+  std::str = QString str.toLocal8Bit();
   ```
 
 * 模板字符串

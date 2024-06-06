@@ -332,7 +332,19 @@ uint32_t threadSize = std::thread::hardware_concurrency();
 
 # 数据结构
 
- **std::tuple ：**元组中的每个元素可以是不同类型的数据，可以是基本类型、自定义类型或其他元组
+## std::iterator
+
+| fun                    | exp                     |
+| ---------------------- | ----------------------- |
+| `std::advance(iter,n)` | 将迭代器iter向后移动n位 |
+
+
+
+## std::tuple 
+
+ 元组中的每个元素可以是不同类型的数据，可以是基本类型、自定义类型或其他元组
+
+
 
 | 函数                   | 描述                                                    |
 | ---------------------- | ------------------------------------------------------- |
@@ -353,6 +365,45 @@ uint32_t threadSize = std::thread::hardware_concurrency();
 auto myTuple = std::make_tuple(arg1, arg2, arg3, ...);
 
 ```
+
+## std:：list
+
+| 函数                                                         | 解释                                                         |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| `splice(iterator position, list& x):`                        | 将列表 `x` 的所有元素移动到当前列表中，位置为 `position`,`x` 在操作之后变为空列表。 |
+| `splice(iterator position, list& x, iterator i):`            | 将列表 `x` 中的单个元素 `i` 移动到当前列表中，位置为 `position` |
+| `splice(iterator position, list& x, iterator first, iterator last)` | 将列表 `x` 中从 `first` 到 `last`（不包括 `last`）的元素移动到当前列表中，位置为 `position` |
+
+```cpp
+// splice()
+#include <iostream>
+#include <list>
+
+int main() {
+    // 初始化两个列表
+    std::list<int> list1 = {1, 2, 3, 4, 5};
+    std::list<int> list2 = {10, 20, 30, 40, 50};
+
+    // 形式1：将list2的所有元素移动到list1的末尾
+    list1.splice(list1.end(), list2);
+
+    // 形式2：将list2中的单个元素移动到list1的开始
+    auto it = list2.begin();
+    std::advance(it, 2); // it指向list2中的第三个元素 (30)
+    list1.splice(list1.begin(), list2, it);
+
+    // 形式3：将list2中的一部分元素（从第二个到第四个）移动到list1的末尾
+    auto first = list2.begin();
+    auto last = list2.begin();
+    std::advance(first, 1); // 指向第二个元素
+    std::advance(last, 4);  // 指向第五个元素
+    list1.splice(list1.end(), list2, first, last);
+    return 0;
+}
+
+```
+
+
 
 # 模板
 
@@ -658,11 +709,222 @@ message("Relative path: ${relative_path}")
 
 这些示例展示了如何在 CMake 中使用 `file` 命令来进行文件系统操作，从而在构建过程管理项目的文件和目录。
 
+## 6 层级调用
 
+```
+|--------------newWork  
+|-----1---CMakeLists.txt
+|
+|--------channel
+|--channel.h                     // 使用本项目构建的库
+|--channel.cpp
+|-2-CMakeLists.txt               // 生成channel动态库
+|
+|--------protocal
+|-3-CMakeLists.txt
+|--protocal.h                    // 使用channel动态库、三方库
+|--protocal.cpp					 // 生成可执行文件
+|
+```
 
+```cmake
+// 1
+cmake_minimum_required(VERSION 3.5)
 
+project(network)
 
+add_subdirectory(channel)
 
+add_subdirectory(protocol)
+```
+
+```cpp
+// 2
+cmake_minimum_required(VERSION 3.5)
+
+project(WDTech.CSM2020.Network.Protocol.channel)
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+// 生成位置
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/../bins/dlls/${PROJECT_NAME})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/../bins/dlls/${PROJECT_NAME})
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/../bins/dlls/${PROJECT_NAME})
+
+add_definitions(-D_CASE_API_EXPORT)
+
+remove_definitions(-DUNICODE)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+// 打包资源文件 .h .cpp
+file(GLOB SRC_FILES *.cpp *.c *h)
+
+// 生成动态库
+add_library(${PROJECT_NAME} SHARED
+    ${SRC_FILES} 
+)
+
+// 三方库
+set(SYS_LIBS
+    ws2_32
+)
+
+set(3RD_LIBS
+    zip/zlib1    
+)
+
+// 使用本项目构建的库
+set(LOCAL_LIBS 
+    WDTech.CSM2020.Utils
+    WDTech.CSM2020.Coroutine.ThreadPool
+    WDTech.CSM2020.Coroutine.Loop
+    WDTech.CSM2020.Coroutine.Log    
+)
+
+// 链接库
+target_link_libraries(${PROJECT_NAME} PRIVATE 
+    ${SYS_LIBS}
+    ${LOCAL_LIBS}
+    ${3RD_LIBS}
+)
+
+// 确保生成四个文件 .dll  .cdb  .lib  .exp
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    WINDOWS_EXPORT_ALL_SYMBOLS ON
+    CXX_VISIBILITY_PRESET hidden
+    VISIBILITY_INLINES_HIDDEN ON
+)
+if (WIN32)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE _WINDLL)
+endif()
+
+```
+
+```cmake
+// 3
+cmake_minimum_required(VERSION 3.5)
+
+project(WDTech.CSM2020.Tools.Simulate)
+
+if(NOT DEFINED ENV{QT_DIR})
+	message("Not Define QT_DIR")
+else()
+    message("QT_DIR: $ENV{QT_DIR}")
+
+    set(CMAKE_PREFIX_PATH $ENV{QT_DIR}) # Qt Kit Dir
+
+//生成位置
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/../bins/${PROJECT_NAME})
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/../bins/${PROJECT_NAME})
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/../bins/${PROJECT_NAME})
+
+    remove_definitions(-DUNICODE)
+
+    set(CMAKE_AUTOUIC ON)
+    set(CMAKE_AUTOMOC ON)
+    set(CMAKE_AUTORCC ON)
+// 查找三方库
+    find_package(Qt5 COMPONENTS Widgets REQUIRED)
+
+// 生成可执行文件
+    add_executable(${PROJECT_NAME} WIN32
+        main.cpp
+
+        ${CMAKE_SOURCE_DIR}/includes/utils/create_dump.cpp
+    )
+
+    
+
+    set(SYS_LIBS
+        ws2_32
+
+        Qt5::Widgets
+    )
+
+    set(3RD_LIBS
+        zip/zlib1
+    )
+// 使用本项目构建的库
+    set(LOCAL_LIBS 
+		WDTech.CSM2020.network.channel   
+    )
+
+    target_link_libraries(${PROJECT_NAME} PRIVATE 
+
+        ${SYS_LIBS}
+        ${LOCAL_LIBS}
+        ${3RD_LIBS}
+    )
+
+    set(PLUGIN_LIBS
+        WDTech.CSM2020.Plugin.Dispatcher
+
+        WDTech.CSM2020.Tools.Simulate.Plugin.MainWindow
+
+        WDTech.CSM2020.Tools.Simulate.Plugin.Emulator.Front
+
+        WDTech.CSM2020.Tools.Simulate.Plugin.Emulator.CBI.CRCC
+        WDTech.CSM2020.Tools.Simulate.Plugin.Emulator.CBIRBC.CRCC
+        WDTech.CSM2020.Tools.Simulate.Plugin.Emulator.CTC.CRCC
+        WDTech.CSM2020.Tools.Simulate.Plugin.Emulator.DCQK.CRCC
+        WDTech.CSM2020.Tools.Simulate.Plugin.Emulator.DYP.CRCC
+        WDTech.CSM2020.Tools.Simulate.Plugin.Emulator.JZ.CRCC
+        WDTech.CSM2020.Tools.Simulate.Plugin.Emulator.QJK.CRCC
+        WDTech.CSM2020.Tools.Simulate.Plugin.Emulator.TCC.CRCC
+        WDTech.CSM2020.Tools.Simulate.Plugin.Emulator.ZPW2000.CRCC
+        WDTech.CSM2020.Tools.Simulate.Plugin.Emulator.ZPW2000Host.CRCC
+    )
+
+    add_dependencies(${PROJECT_NAME}
+        ${PLUGIN_LIBS}
+    )
+
+    COPY_DLLS(PRJ_NAME ${PROJECT_NAME} 3RD_LIBS ${3RD_LIBS} LOCAL_LIBS ${LOCAL_LIBS} PLUGIN_LIBS ${PLUGIN_LIBS})
+endif()
+```
+
+## 7 目标库生成文件
+
+###  7.1 生成动态库
+
+1. **.dll 文件**是实际的动态链接库，包含程序运行时所需的代码和数据。
+2. **.pdb 文件**包含调试信息，帮助开发人员调试程序。
+3. **.lib 文件**是导入库，包含符号信息，使编译和链接依赖于该 DLL 的程序成为可能。
+4. **.exp 文件**记录了导出的符号，帮助链接器正确处理导出过程。
+
+**动态链接库文件**：`.dll` 文件是动态链接库，包含了编译后的代码和数据。（一本书）
+
+- **作用**：它包含实际的可执行代码和数据，供其他程序在运行时加载和使用。
+- **用途**：在运行时，由应用程序或其他 DLL 文件加载，提供其中定义的功能和服务。
+
+**程序数据库文件**：`.pdb` 文件包含调试信息。
+
+- **作用**：提供函数名、变量名、源代码行号等调试信息，帮助开发人员调试程序。
+- **用途**：调试过程中，调试器使用 `.pdb` 文件来显示源代码和相关调试信息，便于开发人员进行断点设置、查看变量值等操作。
+
+**导入库文件**：`.lib` 文件用于在编译和链接过程中使用。
+
+- **作用**：包含函数和数据的符号信息，指向 DLL 文件中实际代码和数据的位置。（目录）
+- **用途**：在编译依赖于该 DLL 的应用程序时，编译器和链接器使用 `.lib` 文件来解析对 DLL 中符号的引用。它使得在链接过程中可以找到并链接到 DLL 中的导出函数和数据。
+
+**导出文件**：`.exp` 文件包含导出符号的信息。（哪些章节可见）
+
+- **作用**：列出所有从 DLL 中导出的函数和变量。
+- **用途**：链接器在创建 DLL 文件时生成 `.exp` 文件，用于记录导出符号。这在一些复杂的链接过程中可能会用到，特别是在手动处理导出符号时。
+
+### 7.2 生成静态库
+
+生成静态库时，通常会生成以下文件：
+
+- **.lib 文件（静态库）**：包含了所有编译后的代码和数据，编译时将这些代码嵌入到你的可执行文件中，使得程序独立运行。
+- **.pdb 文件（程序数据库，可选）**：包含调试信息，帮助开发人员在调试时查看源代码和程序状态。
+
+| 库     | .dll     | .lib                                                         |
+| ------ | -------- | ------------------------------------------------------------ |
+| shared | 书的内容 | 书的目录，多个exe链接时候加载目录，执行时通过目录索引一本数的内容 |
+| static | /        | 没有索引，直接加载书的内容。每个exe加载自己的lib             |
 
 
 

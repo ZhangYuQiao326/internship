@@ -368,3 +368,205 @@ void CBISetParam::initData()
 
 
 
+#  串口通信
+
+## 串口PCB设置
+
+```cpp
+// serialPort_channel
+bool SerialPortChannel::open()
+{
+    if (state() == CHANNEL_STATE_CONNECTED)
+    {
+        return true;
+    }
+
+    if (!m_impl->serialport->open(m_impl->comm.c_str()))
+    {
+        return false;
+    }
+
+    auto handle = m_impl->serialport->handle();
+    // timeout
+    COMMTIMEOUTS timeouts;
+    GetCommTimeouts(handle, &timeouts);
+    timeouts.ReadIntervalTimeout = 200; // 读取间隔超时
+    timeouts.ReadTotalTimeoutConstant = 0;  // 读取操作没有总超时
+    timeouts.ReadTotalTimeoutMultiplier = 0;
+    SetCommTimeouts(handle, &timeouts);
+
+    // rw queue
+    SetupComm(handle, 100 * 1024, 100 * 1024);
+
+    // dcb
+    DCB dcb;
+    GetCommState(handle, &dcb);
+    if (m_impl->baudRate < CBR_110)
+    {
+        dcb.BaudRate = CBR_110;
+    }
+    else if (m_impl->baudRate > CBR_256000)
+    {
+        dcb.BaudRate = CBR_256000;
+    }
+    else
+    {
+        dcb.BaudRate = m_impl->baudRate;
+    }
+
+    dcb.Parity = m_impl->parity;
+    dcb.ByteSize = m_impl->dataBit;
+    dcb.StopBits = m_impl->stopBit;
+    SetCommState(handle, &dcb);
+
+    PurgeComm(handle, PURGE_TXABORT | PURGE_RXABORT | PURGE_TXCLEAR | PURGE_RXCLEAR);
+
+    setState(CHANNEL_STATE_CONNECTED);
+
+    return true;
+}
+```
+
+## 读取串口
+
+```cpp
+// 初始化
+m_unpack(new LengthFieldUnpackEx(
+    config.bufLen,           // 缓冲区长度
+    config.maxLen,           // 最大长度
+    15,                      // 长度字段的偏移量
+    2,                       // 长度字段的大小
+    UNPACK_CODING_LITTEL_ENDIAN, // 使用小端字节序
+    17,                      // 长度调整
+    6,                       // 初始字节去除
+    {char(0xEF), char(0xEF), char(0xEF), char(0xEF)} // 魔术字节
+))
+
+```
+
+![image-20240604161115852](https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202406041611895.png)
+
+```cpp
+bool LengthFieldUnpack::unpack(UnpackParams *params) const
+{
+    char *const buf = params->buffer.get();
+    uint32_t bodyLen = 0;
+    do
+    {
+        // 检查帧头是否是0xEF 0xEF 0xEF 0xEF
+        if (!m_impl->frameHeader.empty())
+        {
+            // 定位帧头校验
+            uint32_t headOffset = 0;
+            bool bResult = false;
+            while (true)
+            {
+                // 检查消息大小
+                if (params->head + headOffset + (m_impl->frameHeader.length() - 1) >= params->bufLen)
+                {
+                    break;
+                }
+
+                bResult = true;
+                for (size_t i = 0; i < m_impl->frameHeader.length(); i++)
+                {
+                    if (buf[params->head + i + headOffset] != m_impl->frameHeader[i])
+                    {
+                        headOffset++;
+                        bResult = false;
+                        break;
+                    }
+                }
+
+                if (bResult)
+                    break;
+            }
+
+            if (!bResult)
+            {
+                // 未识别到帧头
+                headOffset = 0;
+            }
+
+            params->head += headOffset;
+        }
+    // 检查封装的消息（0xEF0xEF0xEf0xEF+。。。+ 数据域 +CRC + 结尾）大小是否超过缓冲区最大长度
+    
+        while (params->head + m_impl->lenOffset + m_impl->lenBytes <= params->offset)
+    {
+        bodyLen = 0;
+        // // 偏移15位，p指向data len的位置，占2位
+        unsigned char *p = (unsigned char *)(buf + params->head + m_impl->lenOffset);
+        switch (m_impl->lenCoding)
+        {
+		// 小端编码：逐字节读取长度字段，低字节在前。大端编码：逐字节读取长度字段，高字节在前。
+        case UNPACK_CODING_LITTEL_ENDIAN:
+            for (uint32_t i = 0; i < m_impl->lenBytes; i++)
+            {
+                // 获取2位表示的data字段长度
+                bodyLen |= ((uint32_t)*p++) << (i * 8);
+            }
+            break;
+        case UNPACK_CODING_BIG_ENDIAN:
+            for (uint32_t i = 0; i < m_impl->lenBytes; i++)
+            {
+                bodyLen = (bodyLen << 8) | (uint32_t)*p++;
+            }
+            break;
+        default:
+            abort();
+            break;
+        }
+
+        // 计算整个消息的总大小17+datalen+6,如果总大小超过允许的最大长度，返回 false，表示长度错误。
+        const uint32_t size = m_impl->bodyOffset + bodyLen + m_impl->tailBytes;
+        if (size > m_impl->maxLen)
+        {
+            // len error
+            return false;
+        }
+
+        if (params->head + size > params->offset)
+        {
+            // buffer not enough
+            break;
+        }
+
+        auto message = std::make_shared<ReadMessage>();
+        message->channel = params->channel;
+        message->buffer = params->buffer;
+        message->data = buf + params->head;
+        message->size = size;
+        params->messages.emplace_back(std::move(message));
+
+        params->head += size;
+    }
+
+    params->index = params->head;
+    params->tail = params->head + bodyLen + m_impl->tailBytes;
+
+    return true;
+}
+```
+
+```cpp
+现在有crc16函数如下
+    static uint16_t calcCbiCRC16Code(uint16_t init, const uint8_t *buf, uint32_t len)
+{
+    uint16_t i, j, crc = init;
+
+    if (buf == nullptr || len == 0)
+    {
+        return 0;
+    }
+
+    for (i = 0; i < len; i++)
+    {
+        j = (crc >> 8) ^ buf[i];
+        crc = (crc << 8) ^ g_cbiCrcTable[j];
+    }
+
+    return crc;
+}，现在有数据std::vector<uint8_t> data，如何通过crc函数计算值
+```
+
