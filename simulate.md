@@ -570,3 +570,23 @@ bool LengthFieldUnpack::unpack(UnpackParams *params) const
 }，现在有数据std::vector<uint8_t> data，如何通过crc函数计算值
 ```
 
+# 报错修改
+
+## 1 读取配置
+
+### 1.1 front
+
+```cpp
+Coroutine<void> FrontEmulatorForm::initStation(const char *path)
+{
+    m_set = co_await FileConfigInterface::getInstance()->GetZmIndexConfigInterface<FrontCommParam>(path, 1);
+    m_kglConfig = co_await FileConfigInterface::getInstance()->GetZmConfigInterface<ISingleKglConfig>(path);
+    m_kglTypeConfig = co_await FileConfigInterface::getInstance()->GetZmConfigInterface<IKglTypeCfg>("ZJJ");  // 修改
+
+    initTreeWidgetFenJis();
+    initTableKGLs();
+
+    co_return;
+}
+```
+

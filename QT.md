@@ -604,7 +604,7 @@ public:
         
         // 设置表头
         QStringList headers;
-        headers << QString::fromlocal8bit("序号") << QString::fromlocal8bit("名称") << QString::fromlocal8bit("状态");
+        headers << QString::fromLocal8Bit("序号") << QString::fromLocal8Bit("名称") << QString::fromLocal8Bit("状态");
         tableWidget->setHorizontalHeaderLabels(headers);
         
         // 插入行
@@ -916,6 +916,39 @@ void CBIEmulatorForm::on_CellDoubleClicked(int row, int column)
   ```cp
   table->setFrameShape(QFrame::NoFrame); //设置无边框
   ```
+
+####  5.2.5 模板
+
+```cpp
+#include <QTableWidget>
+void initPerTable(QTableWidget *table)
+{
+    // 设置表头前需要先设置行号
+    table->setColumnCount(6);
+
+	QStringList headers;
+	headers << QString::fromLocal8Bit("序号") << QString::fromLocal8Bit("名称") << QString::fromLocal8Bit("开关量序号") << QString::fromLocal8Bit("多开关量序号") << QString::fromLocal8Bit("状态") << QString::fromLocal8Bit(" ");
+    table->setHorizontalHeaderLabels(headers);
+
+    table->setShowGrid(true);
+	
+    // 隐藏行号
+	QHeaderView* header = table->verticalHeader();
+	header->setHidden(true);
+	
+    // 最后一列全部扩展
+    table->horizontalHeader()->setStretchLastSection(true);
+    
+    // 表头根据内容自由间距
+    table->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+	// 禁止编辑
+    table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+}
+```
+
+
+
 
 
 ### 5.3 stacked Widget
@@ -2432,16 +2465,16 @@ int main(int argc, char *argv[])
   QString jkPath = QString("%1/jk/%2%3.ini").arg(path).arg(QString::fromLocal8Bit(name.c_str())).arg(i);
   ```
 
-  | 类型       | 由QString 转换方法                  | 转换为 QString 方法                      |
-  | ---------- | ----------------------------------- | ---------------------------------------- |
-  | int        | `str.toInt()`                       | `QString::number(intValue)`              |
-  | double     | `str.toDouble()`                    | `QString::number(doubleValue)`           |
-  | QByteArray | `str.toUtf8()`                      | `QString::fromUtf8(byteArray)`           |
-  | QDateTime  | `str.fromString()`                  | `toString()`                             |
-  | uint8_t    | `static_cast<uint8_t>(str.toInt())` | `QString::number(static_case<int>(val))` |
-  |            |                                     |                                          |
-  |            |                                     |                                          |
-  |            |                                     |                                          |
+  | 类型        | 由QString 转换方法                  | 转换为 QString 方法                       |
+  | ----------- | ----------------------------------- | ----------------------------------------- |
+  | int         | `str.toInt()`                       | `QString::number(intValue)`               |
+  | double      | `str.toDouble()`                    | `QString::number(doubleValue)`            |
+  | QByteArray  | `str.toUtf8()`                      | `QString::fromUtf8(byteArray)`            |
+  | QDateTime   | `str.fromString()`                  | `toString()`                              |
+  | uint8_t     | `static_cast<uint8_t>(str.toInt())` | `QString::number(static_case<int>(val))`  |
+  | std::string | ` QString str.toLocal8Bit();`       | `QString::fromLocal8Bit("打开车站路径!")` |
+  |             |                                     |                                           |
+  |             |                                     |                                           |
 
   
 
@@ -2690,7 +2723,13 @@ int main()
 
 ```
 
-# vs使用qt
+# qt、vs安装
+
+## 下载qt5.15.2、
+
+[安装说明](https://github.com/ZhangYuQiao326/internship/blob/main/file/QT/qt5.15.2%E5%AE%89%E8%A3%85.html)
+
+[安装包](百度网盘/me/计算机/qt/5.15.2安装)
 
 ## 打开Visual Studio 2022
 

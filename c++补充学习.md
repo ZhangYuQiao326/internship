@@ -428,6 +428,7 @@ auto myFunction(T arg1, T arg2) -> decltype(arg1 + arg2) {
 | 名称               | 内容                            |
 | ------------------ | ------------------------------- |
 | `CMAKE_SOURCE_DIR` | 项目根目录,vs中打开的最顶级目录 |
+| `SRC_FILE`         |                                 |
 
 ```cmake
 cmake_minimum_required(VERSION 3.5)
@@ -885,7 +886,7 @@ else()
 endif()
 ```
 
-## 7 目标库生成文件
+## 7 生成库生成文件
 
 ###  7.1 生成动态库
 
