@@ -356,6 +356,8 @@ void CBISetParam::initData()
 
 # 3 组包
 
+## 3.1 读取配置
+
 [配置文件地址](D:\Work\333\bins\配置文件\车站配置文件\ZJJ\jk)
 
 读取配置插件：dlls - fileInterface - station - jk
@@ -366,9 +368,17 @@ void CBISetParam::initData()
 
 ```
 
+## 3.2 CBI
 
+## 3.3 CBI-RBC
 
-#  串口通信
+### 3.3.1 协议
+
+![image-20240611095453414](https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202406110954496.png)
+
+![image-20240611100029384](https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202406111000813.png)
+
+#  4 串口通信
 
 ## 串口PCB设置
 

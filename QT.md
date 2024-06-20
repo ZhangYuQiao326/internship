@@ -576,8 +576,12 @@ setCentralWidget(edit);
 -------
 
 ```cpp
-QComboBox comboBox;
-comboBox.addItem("Option 1", QVariant(1));
+QComboBox* comb = new QComboBox;
+// 填入选项
+comb->addItems({ QString::fromLocal8Bit("占用"), QString::fromLocal8Bit("空闲") });
+
+// 插入单元格内
+table->setCellWidget(row, col, box);
 ```
 
 ### 5.2 tableWidget
@@ -637,7 +641,7 @@ int main(int argc, char *argv[]) {
 
 ```
 
-####  5.3.1 单元格设计
+####  5.3.1 表格设计
 
 下面是`ResizeMode`参数的几种常见取值及其作用：
 
@@ -669,6 +673,8 @@ tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
 #### 5.3.2 单元格操作
 
+##### 1 基础操作
+
 ```cpp
 // 创建单元格
 QTableWidgetItem *item0 = new QTableWidgetItem("Item 1");
@@ -676,9 +682,10 @@ tableWidget.setItem(row, 0, item0);
 
 // 获取存在的单元格
 QTableWidgetItem* item = table->item(row, column);
+
+// 删除单元格内容
+table->takeItem(row, col); 
 ```
-
-
 
 | 接口                                       | 描述                                           |
 | ------------------------------------------ | ---------------------------------------------- |
@@ -705,38 +712,76 @@ item->setData(Qt::DecorationRole, QIcon("icon.png")); // 设置图标
 item->setData(Qt::ToolTipRole, "This is a tooltip"); // 设置工具提示
 ```
 
----------
+##### 2 下拉框
+
+| 接口                                                         | 描述                   |
+| ------------------------------------------------------------ | ---------------------- |
+| `table.setCellWidget(row, col, comboBox)`                    | 单元格插入combobox     |
+| `QComboBox *comboBox = qobject_cast<QComboBox *>(table.cellWidget(row, col));` | 获取单元格内的combobox |
+
+```cpp
+#include <QApplication>
+#include <QTableWidget>
+#include <QComboBox>
+#include <QVBoxLayout>
+#include <QPushButton>
+#include <QMessageBox>
+#include <QHeaderView>
+
+// 将状态索引转换为2位二进制表示
+uint8_t packState(int stateIndex) {
+    return static_cast<uint8_t>(stateIndex) & 0x03; // 确保只取2个比特位
+}
+
+int main(int argc, char *argv[]) {
+    QApplication app(argc, argv);
+
+    QWidget window;
+    QVBoxLayout layout(&window);
+
+    // 创建一个表格，2行2列作为示例
+    QTableWidget table(2, 2);
+
+    // 设置表头
+    table.setHorizontalHeaderLabels({"Name", "State"});
+    table.horizontalHeader()->setStretchLastSection(true);
+
+    // 在表格的第二列添加QComboBox来选择状态
+    for (int row = 0; row < table.rowCount(); ++row) {
+        QComboBox *comboBox = new QComboBox();
+        comboBox->addItems({"State 0", "State 1", "State 2", "State 3"}); // 4种状态
+        table.setCellWidget(row, 1, comboBox);
+    }
+
+    layout.addWidget(&table);
+
+    // 在表格下添加一个按钮，用于提交选择
+    QPushButton *submitButton = new QPushButton("Submit");
+    layout.addWidget(submitButton);
+
+    // 当点击提交按钮时，读取每一行的状态
+    QObject::connect(submitButton, &QPushButton::clicked, [&]() {
+        uint8_t packedData = 0;
+        for (int row = 0; row < table.rowCount(); ++row) {
+            // 将单元格转化为combobox控件
+            QComboBox *comboBox = qobject_cast<QComboBox *>(table.cellWidget(row, 1));
+            if (comboBox) {
+                int stateIndex = comboBox->currentIndex(); // 获取选中的状态索引
+                uint8_t stateBits = packState(stateIndex);
+                packedData |= (stateBits << (row * 2)); // 假设每行占用2个比特位
+            }
+        }
+        QString message = QString("Packed Data: 0x%1").arg(packedData, 2, 16, QChar('0'));
+        QMessageBox::information(&window, "Packed State", message);
+    });
+
+    window.show();
+    return app.exec();
+}
+
+```
 
 
-
-| 接口                                  | 描述                                                   |
-| ------------------------------------- | ------------------------------------------------------ |
-| `setBackground(const QBrush &brush)`  | 设置单元格的背景为给定的刷子 `brush`。                 |
-| `background() const`                  | 返回单元格的背景刷子。                                 |
-| `setForeground(const QBrush &brush)`  | 设置单元格的前景（文本）颜色为给定的刷子 `brush`。     |
-| `foreground() const`                  | 返回单元格的前景刷子。                                 |
-| `setFont(const QFont &font)`          | 设置单元格的字体为给定的字体 `font`。                  |
-| `font() const`                        | 返回单元格的字体。                                     |
-| `setFlags(Qt::ItemFlags flags)`       | 设置单元格的标志（如是否可编辑、可选等）。             |
-| `flags() const`                       | 返回单元格的标志。                                     |
-| `setTextAlignment(int alignment)`     | 设置单元格文本的对齐方式（如左对齐、右对齐等）。       |
-| `textAlignment() const`               | 返回单元格文本的对齐方式。                             |
-| `setCheckState(Qt::CheckState state)` | 设置单元格的复选框状态（如选中、未选中、部分选中）。   |
-| `checkState() const`                  | 返回单元格的复选框状态。                               |
-| `setIcon(const QIcon &icon)`          | 设置单元格的图标为给定的图标 `icon`。                  |
-| `icon() const`                        | 返回单元格的图标。                                     |
-| `setToolTip(const QString &tip)`      | 设置单元格的工具提示为给定的字符串 `tip`。             |
-| `toolTip() const`                     | 返回单元格的工具提示文本。                             |
-| `setStatusTip(const QString &tip)`    | 设置单元格的状态提示为给定的字符串 `tip`。             |
-| `statusTip() const`                   | 返回单元格的状态提示文本。                             |
-| `setWhatsThis(const QString &text)`   | 设置单元格的 "What's This" 文本为给定的字符串 `text`。 |
-| `whatsThis() const`                   | 返回单元格的 "What's This" 文本。                      |
-| `setSizeHint(const QSize &size)`      | 设置单元格的尺寸提示为给定的尺寸 `size`。              |
-| `sizeHint() const`                    | 返回单元格的尺寸提示。                                 |
-| `setSelected(bool select)`            | 设置单元格的选中状态为 `select`。                      |
-| `isSelected() const`                  | 返回单元格的选中状态。                                 |
-| `setEditable(bool editable)`          | 设置单元格是否可编辑。                                 |
-| `isEditable() const`                  | 返回单元格是否可编辑。                                 |
 
 #### 5.2.4 单元格信号
 
@@ -919,6 +964,10 @@ void CBIEmulatorForm::on_CellDoubleClicked(int row, int column)
 
 ####  5.2.5 模板
 
+#####  1 调整表格样式如下：
+
+![image-20240612115421868](https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202406121154373.png)
+
 ```cpp
 #include <QTableWidget>
 void initPerTable(QTableWidget *table)
@@ -944,6 +993,52 @@ void initPerTable(QTableWidget *table)
 	// 禁止编辑
     table->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
+}
+```
+
+##### 2 填充数据
+
+```cpp
+void CBIRBCEmulatorForm::loadPerTableWithData(QTableWidget* table, std::vector<SKglConfig>vec)
+{
+    int index = 0;
+    table->setRowCount(vec.size());
+	
+    // 按行填入
+    for (auto &data : vec)
+    {
+        QStringList str;
+        str << QString::number(index + 1) << QString::fromLocal8Bit(data.strKglName.c_str()) << QString::number(data.kglOrder) << QString::number(data.dkglOrder);
+        
+		for (int col = 0; col < str.size() && col < table->columnCount(); ++col)
+		{
+			QTableWidgetItem* item = new QTableWidgetItem(str[col]);
+			table->setItem(index, col, item);
+		}
+		index++;
+    }
+}
+```
+
+##### 3 选中行加深色
+
+```cpp
+// 多行
+void highLightRows(std::vector<int> vecRow)
+{
+    if (vecRow.size() == 0) return;
+    
+    QTableWidget* table = ui->tableWidget_kglzt;
+    table->clearSelection();
+    for (int row : vecRow) {
+        for (int column = 0; column < table->columnCount(); ++column) {
+            QTableWidgetItem* item = table->item(row, column);
+            if (item) item->setSelected(true);
+        }
+    }
+
+    table->scrollToItem(table->item(vecRow.front(), 0));    
+    return;
 }
 ```
 
@@ -2451,13 +2546,33 @@ int main(int argc, char *argv[])
 
 ### 12.3 QString
 
-* std::string  ->  QString
+* c字符串 <-> QString
 
   ```cpp
-  QString::fromLocal8Bit("打开车站路径!")
-      
-  std::str = QString str.toLocal8Bit();
+  const char* str;
+  QString strq = QString::fromLocal8Bit(str);
+  
+  QString str;
+  const char* strch = str.toLocal8Bit();
   ```
+
+* std::string  <->  QString
+
+  ```cpp
+  std::string str;
+  QString strq = QString::fromLocal8Bit(str.c_str()); // 先转为c字符串 
+  
+  QString strst;
+  std::sting str = std::string(strst.toLocal8Bit());  // 先转为c字符串
+  ```
+
+* 常量字符串 == c字符串
+
+  ```cpp
+  QString strq = QString::fromLocal8Bit("我的爱人！"); // 先转为c字符串 
+  ```
+
+  
 
 * 模板字符串
 
@@ -2465,16 +2580,13 @@ int main(int argc, char *argv[])
   QString jkPath = QString("%1/jk/%2%3.ini").arg(path).arg(QString::fromLocal8Bit(name.c_str())).arg(i);
   ```
 
-  | 类型        | 由QString 转换方法                  | 转换为 QString 方法                       |
-  | ----------- | ----------------------------------- | ----------------------------------------- |
-  | int         | `str.toInt()`                       | `QString::number(intValue)`               |
-  | double      | `str.toDouble()`                    | `QString::number(doubleValue)`            |
-  | QByteArray  | `str.toUtf8()`                      | `QString::fromUtf8(byteArray)`            |
-  | QDateTime   | `str.fromString()`                  | `toString()`                              |
-  | uint8_t     | `static_cast<uint8_t>(str.toInt())` | `QString::number(static_case<int>(val))`  |
-  | std::string | ` QString str.toLocal8Bit();`       | `QString::fromLocal8Bit("打开车站路径!")` |
-  |             |                                     |                                           |
-  |             |                                     |                                           |
+  | 类型       | 由QString 转换方法                  | 转换为 QString 方法                      |
+  | ---------- | ----------------------------------- | ---------------------------------------- |
+  | int        | `str.toInt()`                       | `QString::number(intValue)`              |
+  | double     | `str.toDouble()`                    | `QString::number(doubleValue)`           |
+  | QByteArray | `str.toUtf8()`                      | `QString::fromUtf8(byteArray)`           |
+  | QDateTime  | `str.fromString()`                  | `toString()`                             |
+  | uint8_t    | `static_cast<uint8_t>(str.toInt())` | `QString::number(static_case<int>(val))` |
 
   
 
@@ -2791,11 +2903,13 @@ int main()
 
 ==问题2：**在exe可执行文件目录添加qt依赖的动态库**==
 
+* 清楚qt程序是通过msvc编译 还是 minGW编译，采用对应的powershell
+
 使用`windeployqt`非常简单，它是一个在Qt安装目录的bin文件夹中的可执行文件。以下是使用`windeployqt`的基本步骤：
 
 1. **打开命令提示符或者PowerShell**：
 
-   打开`qt5.15.2（MinGw8.1.0 64-bit）`
+   打开`qt5.15.2（msvs 64-bit）`
 
    进入`cd bin`目录
 

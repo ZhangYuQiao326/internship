@@ -1,4 +1,4 @@
-# c++17
+# 一 c++17
 
 ## 1 std::optional
 
@@ -123,7 +123,7 @@ int main() {
 
 
 
-# 基础类型
+# 二 基础类型
 
 ## 1 数据类型
 
@@ -281,7 +281,7 @@ int main() {
 
 [33](https://mthli.xyz/stackful-stackless/)
 
-# 标准库补充
+# 三 标准库补充
 
 | `std::`                             | exp                                      |
 | ----------------------------------- | ---------------------------------------- |
@@ -330,7 +330,7 @@ uint32_t threadSize = std::thread::hardware_concurrency();
 
 
 
-# 数据结构
+# 四 数据结构
 
 ## std::iterator
 
@@ -405,7 +405,7 @@ int main() {
 
 
 
-# 模板
+# 五 模板
 
 ## 1 模板函数返回类型自动推导
 
@@ -421,7 +421,7 @@ auto myFunction(T arg1, T arg2) -> decltype(arg1 + arg2) {
 
 
 
-# Cmake
+# 六 Cmake
 
 ## 0 预置量
 
@@ -797,8 +797,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
     CXX_VISIBILITY_PRESET hidden
     VISIBILITY_INLINES_HIDDEN ON
 )
-if (WIN32)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE _WINDLL)
+
 endif()
 
 ```
@@ -915,6 +914,24 @@ endif()
 - **作用**：列出所有从 DLL 中导出的函数和变量。
 - **用途**：链接器在创建 DLL 文件时生成 `.exp` 文件，用于记录导出符号。这在一些复杂的链接过程中可能会用到，特别是在手动处理导出符号时。
 
+```cmake
+// 链接库
+target_link_libraries(${PROJECT_NAME} PRIVATE 
+    ${SYS_LIBS}
+    ${LOCAL_LIBS}
+    ${3RD_LIBS}
+)
+
+// 确保生成四个文件 .dll  .cdb  .lib  .exp
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    WINDOWS_EXPORT_ALL_SYMBOLS ON
+    CXX_VISIBILITY_PRESET hidden
+    VISIBILITY_INLINES_HIDDEN ON
+)
+```
+
+
+
 ### 7.2 生成静态库
 
 生成静态库时，通常会生成以下文件：
@@ -939,7 +956,7 @@ endif()
 
 
 
-# windows API
+# 七 windows API
 
 | API                | 功能                                            |
 | ------------------ | ----------------------------------------------- |
@@ -961,11 +978,11 @@ void *DllUtils::dllSymbol(void *dll, const char *funcName)
 
 
 
-# 位运算
+# 八 位运算--协议
 
 | 运算   | 功能                                                         | 作用                         |
 | ------ | ------------------------------------------------------------ | ---------------------------- |
-| 按位&  | `5 & 3`的二进制表示是 `0101 & 0011`，结果是 `0001`，即 `1    | 获取低8位字节，` val & 0xFF` |
+| 按位&  | `5 & 3`的二进制表示是 `0101 & 0011`，结果是 `0001`，即 `1    | 获取低8位字节，` val & 0xFF` |保留低n位|
 | 按位\| | `5 |3` 的二进制表示是 `0101 |0011`，结果是 `0111`，即 `7`    | 字节左移，加上一位           |
 | 异或^  | 二进制位不同时为1，5 ^ 3` 的二进制表示是 `0101 ^ 0011`，结果是 `0110`，即 `6 |                              |
 | 取反~  | ~5` 的二进制表示是 `~0101`，结果是 `1010                     |                              |
@@ -973,27 +990,164 @@ void *DllUtils::dllSymbol(void *dll, const char *funcName)
 | 右移>> | 左侧根据符号位填充（对无符号数`uint8_t`则用0填充)            |                              |
 |        |                                                              |                              |
 
-* 处理一串二进制数据，以字节处理
+## 8.0 低位和高位
 
-  ```cpp
-  uint8_t bodyByte = 0; // 临时处理字节
-  int bitCount = 0;  // 记录当前 bodyByte 中已经填充了多少位
-  
-  for (auto d : vec) {
-      bodyByte = (bodyByte << 1) | d;  // 左移，加入一位
-      bitCount++;
-  
-      if (bitCount == 8) {  // 检查是否已填满 8 位
-          protocolPacket.push_back(bodyByte);
-          bodyByte = 0;
-          bitCount = 0;
-      }
-  }
-  ```
+在计算机科学和数字电子学中，低位（Least Significant Bit, LSB）在二进制数表示中位于右边，这种表示方式称为 **小端序**（Little-endian）。理解这种表示方法的原因需要从几个角度进行探讨，包括历史背景、数字表示的规范和计算机体系结构。
 
-* 获取高低字节
+在二进制数系统中，每一位（bit）代表一个值的幂次方，这些幂次方是以2为基数。对于一个 `n` 位的二进制数：
 
-![image-20240530152550944](https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202405301525216.png)
+- 最右边的位（即第 0 位）是 \(2^0\)，称为 **最低有效位**（LSB）。
+- 最左边的位（第 `n-1` 位）是 \(2^{n-1}\)，称为 **最高有效位**（MSB）。
+
+例如，二进制数 `1011`：
+
+- 右边的位是 \(2^0\) 和 \(2^1\)，这些是低位。
+- 左边的位是 \(2^2\) 和 \(2^3\)，这些是高位。
+
+### 8.0.1 数学表示习惯
+
+在传统的数学表示法中，数值是从右到左排列的，低位在右，高位在左。例如，十进制数 `1234` 表示为：
+
+- `4` 在 \(10^0\) 位置（个位）。
+- `3` 在 \(10^1\) 位置（十位）。
+- `2` 在 \(10^2\) 位置（百位）。
+- `1` 在 \(10^3\) 位置（千位）。
+
+这种表示方式的逻辑和二进制数的排列方式是相同的，因此将低位放在右边是自然的选择。
+
+### 8.0.2 计算机存储和表示
+
+在计算机系统中，**内存地址**是从低到高顺序排列的，这种排列方式影响了数据的存储和访问顺序。在小端序系统中，数据的最低有效字节存储在最低的内存地址，这种方式有助于优化某些操作和提高处理器的效率。
+
+现代大多数处理器采用小端序（Little-endian）模式来存储和处理数据。小端序的主要特点是：
+
+- 数字的最低有效字节存储在最低的地址位置。
+- 数据读取和写入更加简化和高效，尤其是对数据进行部分处理时。
+
+例如，对于一个 `32` 位的整数 `0x12345678`，在小端序系统中，它将被存储为 `78 56 34 12`（从最低到最高地址）。
+
+## 8.1 封装协议顺序
+
+封装协议需要注意两种顺序
+
+### 8.1.1 字节序
+
+有大端和小端之分，协议封装时，会给出：**低字节在前，高字节在后**等要求
+
+1. 获取时间、长度、个数等值
+2. 获取的结果是默认按照大端序：**高字节在前，低字节在后** 的字节序
+3. 按照要求，调为小端序
+
+<img src="https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202406201054999.png" alt="image-20240620105412588" style="zoom: 80%;" />
+
+![image-20240620105759246](https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202406201057653.png)
+
+```cpp
+uint16_t protocalDataLen = 20;  // 默认大端序
+
+// vector的顺序代表：内存顺序从小到大存储
+std::vector<uint8_t> m_protocalPacket;
+
+// 采用大端
+m_protocalPacket[10] = static_cast<uint8_t>(protocalDataLen >> 8  & 0xFF); // 高字节在前
+m_protocalPacket[11] = static_cast<uint8_t>(protocalDataLen & 0xFF); // 低字节在后
+
+// 调为小端
+m_protocalPacket[10] = static_cast<uint8_t>(protocalDataLen  & 0xFF); // 低字节在前
+m_protocalPacket[11] = static_cast<uint8_t>(protocalDataLen >> 8 & 0xFF); // 高字节在后
+```
+
+
+
+### 8.1.2 位序
+
+1. 按照bit位数封装成字节
+2. 根据题目要求：**0~7bit位 存放 0~7数据**， 或者是 **0~7bit位 存放 7~0 数据**
+
+<img src="https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202406201039864.png" alt="image-20240620103900494" style="zoom:50%;" />
+
+
+
+* 封装顺序：**0~7bit位 存放 7~0 数据**
+
+```cpp
+
+uint8_t bodyByte = 0; // 临时处理字节
+int bitCount = 0;  // 记录当前 bodyByte 中已经填充了多少位
+
+for (auto d : vec) {
+    bodyByte = (bodyByte << 1) | d;  // 左移，加入一位
+    bitCount++;
+
+    if (bitCount == 8) {  // 检查是否已填满 8 位
+        protocolPacket.push_back(bodyByte);
+        bodyByte = 0;
+        bitCount = 0;
+    }
+}
+// 不够8位，用0填充
+if (bitCount > 0) {
+	bodyByte <<= (8 - bitCount);
+	m_protocalPacket[protocalIndex++] = bodyByte;
+}
+```
+
+* 封装顺序：**0~7bit位 存放 0~7数
+
+```cpp
+// 在上述封装基础上，逆置字节数据的位数
+uint8_t reverseBits(uint8_t n)
+{
+	uint8_t reversed = 0;
+	for (int i = 0; i < 8; ++i)
+	{
+		reversed |= ((n >> i) & 0x01) << (7 - i);
+	}
+	return reversed;
+}
+```
+
+
+
+## 8.2 获取指定位数bit
+
+### 8.2.1 获取第k位bit
+
+```cpp
+#include <iostream>
+
+int main() {
+    int n = 29; // 例如，二进制为 11101
+    int k = 3;  // 获取第 3 位（从 0 开始计数，实际是第 4 位）
+
+    int bit = (n >> k) & 1; // 右移 k 位后，与 1 进行 AND 操作
+    std::cout << "第 " << k << " 位的值是: " << bit << std::endl;
+
+    return 0;
+}
+
+```
+
+
+
+### 8.2.1 从低位（最后）获取n位
+
+```cpp
+#include <iostream>
+
+int main() {
+    unsigned int value = 12345; // 原始整数，二进制为 11000000111001
+    int n = 8; // 我们想保留的比特位数
+
+    unsigned int result = value & ((1 << n) - 1); // 直接使用位操作保留前 n 位 
+    return 0;
+}
+
+```
+
+
+
+### 8.3.2  获取高低字节
 
 ```cpp
 uint16_t value = 305;
@@ -1009,40 +1163,40 @@ uint8_t highByte = static_cast<uint8_t>(value >> 8 & 0xFF);
 
 ```
 
-* 打印16进制
+## 3.3 打印16进制
 
-  ```cpp
-  #include <iostream>
-  #include <vector>
-  #include <iomanip> // for std::hex, std::setw, and std::setfill
-  
-  int main() {
-      // 定义并初始化一个 vector<uint8_t>
-      std::vector<uint8_t> vec = {0x1, 0xA, 0xFF, 0xB, 0x10};
-  
-      // 遍历 vec 中的每个元素并打印为16进制格式
-      for (auto i : vec) {
-          std::cout << "0x" 
-                    << std::hex << std::setw(2) << std::setfill('0') 
-                    << static_cast<int>(i) << " ";
-      }
-  
-      // 打印换行符
-      std::cout << std::endl;
-  
-      return 0;
-  }
-  
-  ```
+```cpp
+#include <iostream>
+#include <vector>
+#include <iomanip> // for std::hex, std::setw, and std::setfill
 
-  `"0x"`：打印每个值的前缀，表示这是一个十六进制数。
+int main() {
+    // 定义并初始化一个 vector<uint8_t>
+    std::vector<uint8_t> vec = {0x1, 0xA, 0xFF, 0xB, 0x10};
 
-  `std::hex`：将输出格式设置为十六进制。
+    // 遍历 vec 中的每个元素并打印为16进制格式
+    for (auto i : vec) {
+        std::cout << "0x" 
+                  << std::hex << std::setw(2) << std::setfill('0') 
+                  << static_cast<int>(i) << " ";
+    }
 
-  `std::setw(2)`：设置输出宽度为2个字符。
+    // 打印换行符
+    std::cout << std::endl;
 
-  `std::setfill('0')`：用 `0` 填充不足的宽度。
+    return 0;
+}
 
-  `static_cast<int>(i)`：将 `i` 强制转换为 `int` 类型。这是因为 `uint8_t` 实际上是一个 `unsigned char`，直接输出时会被解释为字符。转换为 `int` 后，输出其整数值。
+```
 
-  `" "`：在每个十六进制数之间添加一个空格
+`"0x"`：打印每个值的前缀，表示这是一个十六进制数。
+
+`std::hex`：将输出格式设置为十六进制。
+
+`std::setw(2)`：设置输出宽度为2个字符。
+
+`std::setfill('0')`：用 `0` 填充不足的宽度。
+
+`static_cast<int>(i)`：将 `i` 强制转换为 `int` 类型。这是因为 `uint8_t` 实际上是一个 `unsigned char`，直接输出时会被解释为字符。转换为 `int` 后，输出其整数值。
+
+`" "`：在每个十六进制数之间添加一个空格
