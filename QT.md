@@ -964,7 +964,7 @@ void CBIEmulatorForm::on_CellDoubleClicked(int row, int column)
 
 ####  5.2.5 模板
 
-#####  1 调整表格样式如下：
+#####  1 调整表格样式：
 
 ![image-20240612115421868](https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202406121154373.png)
 
@@ -1039,6 +1039,51 @@ void highLightRows(std::vector<int> vecRow)
 
     table->scrollToItem(table->item(vecRow.front(), 0));    
     return;
+}
+```
+
+##### 4 双击修改单元格
+
+```cpp
+connect(table, &QTableWidget::cellDoubleClicked, this, &JZEmulatorForm::on_CellDoubleClicked);
+
+void JZEmulatorForm::on_CellDoubleClicked(int row, int column)
+{
+    // 获取当前调用函数的表格
+	QTableWidget* table = qobject_cast<QTableWidget*>(sender());
+	if (column == 3) {
+		QTableWidgetItem* item = table->item(row, column);
+        // 根据不同表格进行不同的操作
+		if (table == ui->tableWidget_jzqd)
+		{
+			if (item->text() == QString::fromLocal8Bit("空闲")) {
+				item->setText(QString::fromLocal8Bit("占用"));
+			}
+			else if (item->text() == QString::fromLocal8Bit("占用")) {
+				item->setText(QString::fromLocal8Bit("空闲"));
+			}
+		}
+		else if(table == ui->tableWidget_txyc || table == ui->tableWidget_swsbgz || table == ui->tableWidget_snsbgz)
+		{
+			if (item->text() == QString::fromLocal8Bit("正常")) {
+				item->setText(QString::fromLocal8Bit("故障"));
+			}
+			else if (item->text() == QString::fromLocal8Bit("故障")) {
+				item->setText(QString::fromLocal8Bit("正常"));
+			}
+		}
+		else if (table == ui->tableWidget_snbkbsd)
+		{
+			if (item->text() == QString::fromLocal8Bit("灯灭")) {
+				item->setText(QString::fromLocal8Bit("灯亮"));
+			}
+			else if (item->text() == QString::fromLocal8Bit("灯亮")) {
+				item->setText(QString::fromLocal8Bit("灯灭"));
+			}
+		}
+	
+		
+	}
 }
 ```
 
