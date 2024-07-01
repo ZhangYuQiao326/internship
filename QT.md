@@ -650,6 +650,10 @@ int main(int argc, char *argv[]) {
 - `QHeaderView::Stretch`：自动拉伸，部分会根据父控件的大小自动拉伸。
 - `QHeaderView::ResizeToContents`：根据内容调整大小，部分的大小会根据其内容的大小自动调整。
 
+【出现问题：ResizeToContents】、
+
+设置该模式时，对表格一列进行修改，遍历表格时会非常慢，因为需要计算每个单元格的表格大小，不建议用
+
 ```cpp
 // 设置表格的大小策略，表头最后一列扩展整个表格
 tableWidget->horizontalHeader()->setStretchLastSection(true);
@@ -663,9 +667,9 @@ tableWidget->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 // 表头单元格随文本内容调节（列）
 tableWidget->horizontalHeader()->
 setSectionResizeMode(QHeaderView::ResizeToContents);
-// 行大小随文本调节
-tableWidget->verticalHeader()->
-setSectionResizeMode(QHeaderView::ResizeToContents);
+// 行大小随文本调节----卡死，不建议使用
+//tableWidget->verticalHeader()->
+//setSectionResizeMode(QHeaderView::ResizeToContents);
 
 // 不允许修改单元格内容
 tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -964,7 +968,7 @@ void CBIEmulatorForm::on_CellDoubleClicked(int row, int column)
 
 ####  5.2.5 模板
 
-#####  1 调整表格样式如下：
+#####  1 调整表格样式：
 
 ![image-20240612115421868](https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202406121154373.png)
 
@@ -1039,6 +1043,51 @@ void highLightRows(std::vector<int> vecRow)
 
     table->scrollToItem(table->item(vecRow.front(), 0));    
     return;
+}
+```
+
+##### 4 双击修改单元格
+
+```cpp
+connect(table, &QTableWidget::cellDoubleClicked, this, &JZEmulatorForm::on_CellDoubleClicked);
+
+void JZEmulatorForm::on_CellDoubleClicked(int row, int column)
+{
+    // 获取当前调用函数的表格
+	QTableWidget* table = qobject_cast<QTableWidget*>(sender());
+	if (column == 3) {
+		QTableWidgetItem* item = table->item(row, column);
+        // 根据不同表格进行不同的操作
+		if (table == ui->tableWidget_jzqd)
+		{
+			if (item->text() == QString::fromLocal8Bit("空闲")) {
+				item->setText(QString::fromLocal8Bit("占用"));
+			}
+			else if (item->text() == QString::fromLocal8Bit("占用")) {
+				item->setText(QString::fromLocal8Bit("空闲"));
+			}
+		}
+		else if(table == ui->tableWidget_txyc || table == ui->tableWidget_swsbgz || table == ui->tableWidget_snsbgz)
+		{
+			if (item->text() == QString::fromLocal8Bit("正常")) {
+				item->setText(QString::fromLocal8Bit("故障"));
+			}
+			else if (item->text() == QString::fromLocal8Bit("故障")) {
+				item->setText(QString::fromLocal8Bit("正常"));
+			}
+		}
+		else if (table == ui->tableWidget_snbkbsd)
+		{
+			if (item->text() == QString::fromLocal8Bit("灯灭")) {
+				item->setText(QString::fromLocal8Bit("灯亮"));
+			}
+			else if (item->text() == QString::fromLocal8Bit("灯亮")) {
+				item->setText(QString::fromLocal8Bit("灯灭"));
+			}
+		}
+	
+		
+	}
 }
 ```
 
@@ -1143,6 +1192,181 @@ QFont tabFont = tabWidget->font();
 tabFont.setPointSize(12); 
 ```
 
+`QTabWidget` 是 Qt 中用于管理和显示多个标签页的控件。它允许在一个窗口中显示多个页面，每个页面都有一个关联的标签。以下是 `QTabWidget` 的常用接口，整理成表格：
+
+| 方法/属性                        | 描述                                                         |
+| -------------------------------- | ------------------------------------------------------------ |
+| **添加和移除标签页**             |                                                              |
+| `addTab(widget, text)`           | 向 `QTabWidget` 添加一个新的标签页，参数是要添加的 `widget` 和 `text`（标签页的标题）。 |
+| `insertTab(index, widget, text)` | 在指定的 `index` 位置插入一个新的标签页。参数是插入位置 `index`，标签页 `widget` 和 `text`（标题）。 |
+| `removeTab(index)`               | 移除指定位置的标签页。参数 `index` 是标签页的索引。          |
+| **访问和操作标签页**             |                                                              |
+| `widget(index)`                  | 获取指定位置的标签页（`QWidget`）。参数 `index` 是标签页的索引。 |
+| `indexOf(widget)`                | 返回指定 `widget` 在 `QTabWidget` 中的索引。                 |
+| `count()`                        | 返回当前 `QTabWidget` 中标签页的数量。                       |
+| `currentIndex()`                 | 返回当前显示的标签页的索引。                                 |
+| `setCurrentIndex(index)`         | 设置当前显示的标签页，参数 `index` 是要显示的标签页索引。    |
+| **标签和图标设置**               |                                                              |
+| `setTabText(index, text)`        | 设置指定标签页的标题。参数 `index` 是标签页索引，`text` 是新的标题。 |
+| `tabText(index)`                 | 获取指定标签页的标题。参数 `index` 是标签页索引。            |
+| `setTabIcon(index, icon)`        | 设置指定标签页的图标。参数 `index` 是标签页索引，`icon` 是 `QIcon` 对象。 |
+| `tabIcon(index)`                 | 获取指定标签页的图标。参数 `index` 是标签页索引。            |
+| **标签工具提示**                 |                                                              |
+| `setTabToolTip(index, text)`     | 设置指定标签页的工具提示文本。参数 `index` 是标签页索引，`text` 是工具提示文本。 |
+| `tabToolTip(index)`              | 获取指定标签页的工具提示文本。参数 `index` 是标签页索引。    |
+| **标签可见性和状态**             |                                                              |
+| `setTabEnabled(index, bool)`     | 设置指定标签页是否可用。参数 `index` 是标签页索引，`bool` 表示是否可用。 |
+| `isTabEnabled(index)`            | 检查指定标签页是否可用。参数 `index` 是标签页索引。          |
+| `setTabVisible(index, bool)`     | 设置指定标签页是否可见。参数 `index` 是标签页索引，`bool` 表示是否可见。 |
+| `isTabVisible(index)`            | 检查指定标签页是否可见。参数 `index` 是标签页索引。          |
+| **选项和行为**                   |                                                              |
+| `setTabsClosable(bool)`          | 设置标签页是否可以被关闭。参数 `bool` 表示是否允许关闭。     |
+| `tabsClosable()`                 | 检查标签页是否可以被关闭。返回一个布尔值。                   |
+| `setMovable(bool)`               | 设置标签页是否可以拖动以重新排序。参数 `bool` 表示是否允许拖动。 |
+| `isMovable()`                    | 检查标签页是否可以拖动。返回一个布尔值。                     |
+| `setTabPosition(TabPosition)`    | 设置标签的位置。参数是 `QTabWidget::TabPosition` 枚举值，指定标签位置（如顶部、底部等）。 |
+| `tabPosition()`                  | 获取当前标签的位置。返回一个 `QTabWidget::TabPosition` 枚举值。 |
+| **信号和事件**                   |                                                              |
+| `currentChanged(index)`          | 一个信号，当当前标签页改变时触发。参数 `index` 是新标签页的索引。 |
+| `tabBarClicked(index)`           | 一个信号，当用户点击标签栏时触发。参数 `index` 是被点击的标签页索引。 |
+| `tabBarDoubleClicked(index)`     | 一个信号，当用户双击标签栏时触发。参数 `index` 是被双击的标签页索引。 |
+| `tabCloseRequested(index)`       | 一个信号，当用户点击标签页的关闭按钮时触发。参数 `index` 是请求关闭的标签页索引。 |
+
+**添加和移除标签页**
+
+- `addTab(widget, text)`:
+  向 `QTabWidget` 添加一个新的标签页。
+  ```cpp
+  QTabWidget *tabWidget = new QTabWidget;
+  QWidget *page1 = new QWidget;
+  tabWidget->addTab(page1, "Page 1");
+  ```
+
+- `insertTab(index, widget, text)`:
+  在指定的位置插入一个新的标签页。
+  ```cpp
+  QWidget *page2 = new QWidget;
+  tabWidget->insertTab(1, page2, "Page 2"); // 在第二个位置插入
+  ```
+
+- `removeTab(index)`:
+  移除指定位置的标签页。
+  ```cpp
+  tabWidget->removeTab(1); // 移除第二个标签页
+  ```
+
+- **访问和操作标签页**
+  - `widget(index)`:
+    获取指定位置的标签页。
+    ```cpp
+    QWidget *page = tabWidget->widget(0); // 获取第一个标签页
+    ```
+
+  - `indexOf(widget)`:
+    返回指定 `widget` 在 `QTabWidget` 中的索引。
+    ```cpp
+    int index = tabWidget->indexOf(page1); // 获取 page1 的索引
+    ```
+
+  - `count()`:
+    返回当前 `QTabWidget` 中标签页的数量。
+    ```cpp
+    int numberOfTabs = tabWidget->count();
+    ```
+
+  - `currentIndex()`:
+    返回当前显示的标签页的索引。
+    ```cpp
+    int currentTabIndex = tabWidget->currentIndex();
+    ```
+
+  - `setCurrentIndex(index)`:
+    设置当前显示的标签页。
+    ```cpp
+    tabWidget->setCurrentIndex(1); // 显示第二个标签页
+    ```
+
+- **标签和图标设置**
+  - `setTabText(index, text)`:
+    设置指定标签页的标题。
+    ```cpp
+    tabWidget->setTabText(0, "New Page 1 Title");
+    ```
+
+  - `tabText(index)`:
+    获取指定标签页的标题。
+    ```cpp
+    QString title = tabWidget->tabText(0);
+    ```
+
+  - `setTabIcon(index, icon)`:
+    设置指定标签页的图标。
+    ```cpp
+    QIcon icon(":/path/to/icon.png");
+    tabWidget->setTabIcon(0, icon);
+    ```
+
+  - `tabIcon(index)`:
+    获取指定标签页的图标。
+    ```cpp
+    QIcon icon = tabWidget->tabIcon(0);
+    ```
+
+- **标签工具提示**
+  - `setTabToolTip(index, text)`:
+    设置指定标签页的工具提示文本。
+    ```cpp
+    tabWidget->setTabToolTip(0, "This is Page 1");
+    ```
+
+  - `tabToolTip(index)`:
+    获取指定标签页的工具提示文本。
+    ```cpp
+    QString toolTip = tabWidget->tabToolTip(0);
+    ```
+
+- **标签可见性和状态**
+  - `setTabEnabled(index, bool)`:
+    设置指定标签页是否可用。
+    ```cpp
+    tabWidget->setTabEnabled(0, false); // 禁用第一个标签页
+    ```
+
+  - `isTabEnabled(index)`:
+    检查指定标签页是否可用。
+    ```cpp
+    bool isEnabled = tabWidget->isTabEnabled(0);
+    ```
+
+  - `setTabVisible(index, bool)`:
+    设置指定标签页是否可见。
+    ```cpp
+    tabWidget->setTabVisible(0, false); // 隐藏第一个标签页
+    ```
+
+  - `isTabVisible(index)`:
+    检查指定标签页是否可见。
+    ```cpp
+    bool isVisible = tabWidget->isTabVisible(0);
+    ```
+
+- **选项和行为**
+  - `setTabsClosable(bool)`:
+    设置标签页是否可以被关闭。
+    ```cpp
+    tabWidget->setTabsClosable(true);
+    ```
+
+  - `tabsClosable()`:
+    检查标签页是否可以被关闭。
+    ```cpp
+    bool closable = tabWidget->tabsClosable();
+    ```
+
+  - `setMovable(bool)`:
+    设置标签页是否可以拖动以重新排序。
+    ```cpp
+
 ### 5.5 label
 
 <img src="https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202405161643521.png" alt="image-20240516164321249" style="zoom:50%;" />
@@ -1151,7 +1375,105 @@ tabFont.setPointSize(12);
 | --------- | --------------------- |
 | alignment | 设置label文字水平居中 |
 
+### 5.6 QCheckBox
 
+在Qt中，`QCheckBox`是一个常见的复选框控件。它允许用户选择或取消选择某个选项。以下是`QCheckBox`类的一些常用接口，整理成表格：
+
+| 方法/属性                      | 描述                                                         |
+| ------------------------------ | ------------------------------------------------------------ |
+| `isChecked()`                  | 检查复选框是否被选中，返回一个布尔值 `True`（选中）或 `False`（未选中）。 |
+| `setChecked(bool)`             | 设置复选框的选中状态。如果参数为 `True`，复选框被选中；如果为 `False`，复选框未选中。 |
+| `toggle()`                     | 切换复选框的状态。如果复选框被选中，它会变为未选中；如果未选中，则变为选中。 |
+| `setText(str)`                 | 设置复选框旁边显示的文本。                                   |
+| `text()`                       | 获取复选框当前显示的文本。                                   |
+| `isTristate()`                 | 检查复选框是否支持三态（未选中、部分选中、选中）。返回 `True` 表示支持，`False` 表示不支持。 |
+| `setTristate(bool)`            | 设置复选框是否支持三态模式。如果参数为 `True`，复选框可以有三种状态；否则只有两种状态。 |
+| `checkState()`                 | 返回当前的选中状态。可能的值有：`Qt::Unchecked`（未选中）、`Qt::PartiallyChecked`（部分选中）、`Qt::Checked`（选中）。 |
+| `setCheckState(Qt.CheckState)` | 设置复选框的选中状态，参数可以是 `Qt::Unchecked`、`Qt::PartiallyChecked` 或 `Qt::Checked`。 |
+| `stateChanged(int)`            | 一个信号，当复选框的状态发生变化时被触发。传递的参数是新的状态（0 - 未选中，1 - 部分选中，2 - 选中）。 |
+
+- **isChecked()**: 
+  检查复选框是否被选中。
+  ```python
+  if checkbox.isChecked():
+      print("Checkbox is checked")
+  ```
+
+- **setChecked(bool)**: 
+  设置复选框的选中状态。
+  
+  ```python
+  checkbox.setChecked(True)  # 选中复选框
+  checkbox.setChecked(False) # 取消选中复选框
+  ```
+  
+- **toggle()**: 
+  切换复选框的状态。
+  ```python
+  checkbox.toggle()  # 如果当前选中，则取消选中；反之亦然
+  ```
+
+- **setText(str)**: 
+  设置复选框旁边的文本。
+  ```python
+  checkbox.setText("I agree to the terms and conditions")
+  ```
+
+- **text()**: 
+  获取当前显示的文本。
+  ```python
+  current_text = checkbox.text()
+  print(current_text)
+  ```
+
+- **isTristate()**: 
+  检查复选框是否支持三态。
+  ```python
+  if checkbox.isTristate():
+      print("Checkbox supports tristate")
+  ```
+
+- **setTristate(bool)**: 
+  设置复选框是否支持三态。
+  ```python
+  checkbox.setTristate(True)  # 允许复选框有三个状态
+  ```
+
+- **checkState()**: 
+  获取当前的选中状态。
+  ```python
+  state = checkbox.checkState()
+  if state == Qt.Checked:
+      print("Checkbox is checked")
+  elif state == Qt.PartiallyChecked:
+      print("Checkbox is partially checked")
+  else:
+      print("Checkbox is unchecked")
+  ```
+
+- **setCheckState(Qt.CheckState)**: 
+  设置复选框的选中状态。
+  ```python
+  checkbox.setCheckState(Qt.Checked)            # 设置为选中
+  checkbox.setCheckState(Qt.PartiallyChecked)   # 设置为部分选中
+  checkbox.setCheckState(Qt.Unchecked)          # 设置为未选中
+  ```
+
+- **stateChanged(int)**: 
+  信号，在复选框的状态改变时触发。
+  ```python
+  def on_state_changed(state):
+      if state == 0:
+          print("Unchecked")
+      elif state == 1:
+          print("Partially checked")
+      elif state == 2:
+          print("Checked")
+  
+  checkbox.stateChanged.connect(on_state_changed)
+  ```
+
+这些接口在开发`Qt`应用程序时非常有用，允许你根据需要对复选框的行为和外观进行细粒度的控制。
 
 ## 6 layout
 

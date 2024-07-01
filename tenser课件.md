@@ -1772,7 +1772,7 @@ cmake --build build
 
 ![image-20231015180228401](C:\Users\zhang\AppData\Roaming\Typora\typora-user-images\image-20231015180228401.png)
 
-## 一、安装Pytorch 及 YOLO v5
+## 一、安装Pytorch 及 YOLO v5  v8
 
 ### AAAA 若使用autodl
 
