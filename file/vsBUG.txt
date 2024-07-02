@@ -1,0 +1,7 @@
+1 严重性	代码	说明	项目	文件	行	禁止显示状态	详细信息
+错误	LNK2019	无法解析的外部符号 "private: void __cdecl CTCEmulatorForm::on_timer(void)" (?on_timer@CTCEmulatorForm@@AEAAXXZ)，
+函数 "private: static void __cdecl CTCEmulatorForm::qt_static_metacall(class QObject *,enum QMetaObject::Call,int,void * *)" (?qt_static_metacall@CTCEmulatorForm@@CAXPEAVQObject@@W4Call@QMetaObject@@HPEAPEAX@Z) 中引用了该符号 	
+D:\Work\44\sources\sources	D:\Work\44\sources\mocs_compilation_Debug.obj	1		
+[头文件声明函数未定义]
+
+

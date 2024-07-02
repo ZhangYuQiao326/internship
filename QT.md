@@ -3159,7 +3159,7 @@ int main()
 
 # qt、vs安装
 
-## 下载qt5.15.2、
+## 下载qt5.15.2
 
 [安装说明](https://github.com/ZhangYuQiao326/internship/blob/main/file/QT/qt5.15.2%E5%AE%89%E8%A3%85.html)
 
@@ -3176,6 +3176,10 @@ int main()
 输入Qt搜索，然后下载【Qt Visual Studio Tools】，等待下载完成
 
 <img src="https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202405151613212.png" alt="image-20240515161321728" style="zoom:33%;" />
+
+下载【Qt Vs Cmake Tools】,可以右键新建qt项
+
+<img src="https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202407021603615.png" alt="image-20240702160335253" style="zoom:67%;" />
 
 ## 安装QT插件
 
@@ -3222,6 +3226,10 @@ int main()
 结果：成功解决问题
 
 <img src="https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202404281724230.png" alt="image-20240428172412623" style="zoom:50%;" />
+
+vs中，添加完毕，组件爆红，先ctrlB编译项目，再ctrl左键点击组件，进入ui类当中，存在组件，则说明添加成功
+
+
 
 ==问题2：**在exe可执行文件目录添加qt依赖的动态库**==
 
