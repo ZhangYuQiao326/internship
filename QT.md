@@ -1000,7 +1000,7 @@ void initPerTable(QTableWidget *table)
 }
 ```
 
-##### 2 填充数据
+##### 2 填充所有数据
 
 ```cpp
 void CBIRBCEmulatorForm::loadPerTableWithData(QTableWidget* table, std::vector<SKglConfig>vec)
@@ -1024,7 +1024,27 @@ void CBIRBCEmulatorForm::loadPerTableWithData(QTableWidget* table, std::vector<S
 }
 ```
 
-##### 3 选中行加深色
+##### 3 动态填充末尾一行
+
+```cpp
+static void addOneRowInTable(QTableWidget *table, QStringList vals) 
+{
+	int count = table->rowCount();
+	table->insertRow(count);
+
+	QTableWidgetItem* item;
+	for (int col = 0; col < table->columnCount() && col < vals.size(); col++)
+	{
+		item = new QTableWidgetItem(vals[col]);
+		table->setItem(count, col, item);
+
+	}
+}
+```
+
+
+
+##### 4 选中行加深色
 
 ```cpp
 // 多行
@@ -1044,9 +1064,12 @@ void highLightRows(std::vector<int> vecRow)
     table->scrollToItem(table->item(vecRow.front(), 0));    
     return;
 }
+
+// 单击选中一行
+ui->tableWidget_bjxx->setSelectionBehavior(QAbstractItemView::SelectRows);
 ```
 
-##### 4 双击修改单元格
+##### 5 双击修改单元格
 
 ```cpp
 connect(table, &QTableWidget::cellDoubleClicked, this, &JZEmulatorForm::on_CellDoubleClicked);
@@ -1090,6 +1113,8 @@ void JZEmulatorForm::on_CellDoubleClicked(int row, int column)
 	}
 }
 ```
+
+##### 6 清除表格数据
 
 
 
@@ -3227,7 +3252,7 @@ int main()
 
 <img src="https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202404281724230.png" alt="image-20240428172412623" style="zoom:50%;" />
 
-vs中，添加完毕，组件爆红，先ctrlB编译项目，再ctrl左键点击组件，进入ui类当中，存在组件，则说明添加成功
+**解决**：vs中，添加完毕，组件爆红，先ctrlB编译项目，再ctrl左键点击组件，进入ui类当中，存在组件，则说明添加成功
 
 
 
@@ -3267,6 +3292,8 @@ build选择qmake
 
 ==问题4：无法自动生成ui_xx_xx.h头文件==
 
+QT:
+
 先对项目进行清除（删除已经生成的ui文件），重新构建（build）
 
 如果不行，则使用uic.exe手动生成
@@ -3275,6 +3302,10 @@ build选择qmake
 2. 进入demo.ui的目录
 3. 使用命令 `uic demo.ui > ui_demo.h `生成到当前文件
 4. 可以移动到自动生成ui文件的目录，方便管理，默认在：`D:\software\Perfessional\qt5.14\myProject\CSM\build\Desktop_Qt_5_15_2_MSVC2019_64bit-Debug\CSM_autogen\include`
+
+VS:
+
+
 
 ==问题5：QString与std::string转换的乱码问题==
 
