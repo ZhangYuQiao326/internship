@@ -2919,7 +2919,18 @@ int main(int argc, char *argv[])
   QString strq = QString::fromLocal8Bit("我的爱人！"); // 先转为c字符串 
   ```
 
-  
+* string <-> int <-> QString
+
+```cpp
+int a = 2;
+std::string b = std::to_string(a);
+Qstring s = QString::number(a);
+
+int c = std::stoi(b);
+int d = s.toInt();
+```
+
+
 
 * 模板字符串
 
