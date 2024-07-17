@@ -643,6 +643,8 @@ int main(int argc, char *argv[]) {
 
 ####  5.3.1 表格设计
 
+##### 1 基础操作
+
 下面是`ResizeMode`参数的几种常见取值及其作用：
 
 - `QHeaderView::Interactive`：允许用户通过拖动调整部分的大小。
@@ -674,6 +676,29 @@ setSectionResizeMode(QHeaderView::ResizeToContents);
 // 不允许修改单元格内容
 tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
 ```
+
+##### 2 部分列允许编辑
+
+```cpp
+QStringList str;
+str << QString::number(index + 1) << QString::fromLocal8Bit(data.name.c_str()) << QString::number(data.kglAd) << QString::fromLocal8Bit(state.c_str())<< QString::number(0);
+
+// 设置数据的时候修改单个单元格的编辑模式
+for (int col = 0; col < str.size() && col < table->columnCount(); ++col)
+{
+	QTableWidgetItem* item = new QTableWidgetItem(str[col]);
+	table->setItem(index, col, item);
+	if (col == 4) {
+		item->setFlags(item->flags() | Qt::ItemIsEditable); 
+	}
+	else {
+		item->setFlags(item->flags() & ~Qt::ItemIsEditable); 
+	}
+}
+index++;
+```
+
+
 
 #### 5.3.2 单元格操作
 
@@ -3283,10 +3308,10 @@ int main()
    直接拖动exe文件进入powershell
 
 3. **运行`windeployqt`命令**：
-   在路径后面加上`windeployqt`
+   `windeployqt.exe`在路径后面加上
 
    ```shell
-   D:\software\Perfessional\QT5.15.2\5.15.2\mingw81_64\bin>D:\Work\22\Debug\站机仿真平台.exe windeployqt
+   windeployqt.exe D:\software\Perfessional\QT5.15.2\5.15.2\mingw81_64\bin>D:\Work\22\Debug\站机仿真平台.exe 
    ```
 
 4. **等待`windeployqt`执行完成**：
