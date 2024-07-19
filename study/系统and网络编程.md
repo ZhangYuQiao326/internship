@@ -4548,3 +4548,337 @@ linux中进程的状态通过结构体 task_state_array管理
 * 优先级通过pcb中的两个整数控制,PRI(priority), NI(nice)，优先级=PRI + NI
 * 用户可以自定义NI调整进程优先级，使用top命令进入，按r 输入调整的进程pid， 输入NI值
 * PRI初始值大小80， NI自定义范围[-20, 19] 40个级别
+
+# 16 Windows网络编程
+
+## 16.1 winsock2.h库
+
+`WSASend` 和 `WSARecv` 是用于在 Windows Socket API（Winsock）中发送和接收数据的函数。以下是每个函数的参数及其解释：
+
+### WSASend
+
+```c
+int WSASend(
+  SOCKET s,           // 要发送数据的套接字
+  LPWSABUF lpBuffers, // 包含要发送的数据缓buffer
+  DWORD dwBufferCount,// 数据的个数
+  LPDWORD lpNumberOfBytesSent,   // 接收发送的数据字节数，可以是 `NULL`，如果使用异步重叠操作，则必须为 `NULL`
+  DWORD dwFlags, // 1、0：标准发送， 2、MSG_DONTROUTE:数据不会通过路由
+  LPWSAOVERLAPPED lpOverlapped,  // 1、null：同步阻塞发送socket  2、指向overlapped：使用异步发送数据
+  LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine  // 1、null:不使用  2、异步完成后调用函数
+);
+```
+
+
+
+### WSARecv
+
+```c
+int WSARecv(
+  SOCKET s,                        // 接收数据的套接字
+  LPWSABUF lpBuffers,              // 接收数据的buffer
+  DWORD dwBufferCount,             // buffer大小
+  LPDWORD lpNumberOfBytesRecvd,    // 接收实际接收到的数据字节数，若使用异步，则为null
+  LPDWORD lpFlags,
+  LPWSAOVERLAPPED lpOverlapped,    // 指向overlapped，用于异步操作
+  LPWSAOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine  // 异步完成时调用
+);
+```
+
+
+
+### WSABUF 缓冲区
+
+* 专门用于socket通信发送数据使用
+
+```c
+typedef struct _WSABUF {
+  ULONG len;  // 缓冲区的长度
+  CHAR FAR *buf;  // 指向缓冲区的指针
+} WSABUF, *LPWSABUF;
+```
+
+
+
+### WSAOVERLAPPED 结构体
+
+```c
+typedef struct _WSAOVERLAPPED {
+  DWORD Internal;
+  DWORD InternalHigh;
+  DWORD Offset;
+  DWORD OffsetHigh;
+  HANDLE hEvent;
+} WSAOVERLAPPED, *LPWSAOVERLAPPED;
+```
+
+**字段解释：**
+
+1. **Internal (DWORD)**
+   - 用于 Winsock 内部使用。
+
+2. **InternalHigh (DWORD)**
+   - 用于 Winsock 内部使用。
+
+3. **Offset (DWORD)**
+   - 文件偏移量，用于文件 I/O 操作。
+
+4. **OffsetHigh (DWORD)**
+   - 高位文件偏移量。
+
+5. **hEvent (HANDLE)**
+   - 用于通知操作完成的事件句柄。
+
+这些函数和结构体用于处理高性能网络 I/O 操作，特别是在需要异步（非阻塞）处理的情况下非常有用。
+
+## 16.2 IO完成端口
+
+**异步 I/O 操作机制**
+
+1. **I/O 请求初始化**
+   - 当 `WriteFile` 函数被调用，并传入一个 `OVERLAPPED` 结构体时，操作系统知道这是一个异步操作。
+   - `OVERLAPPED` 结构体中包含的信息（如文件偏移量和事件句柄）会被用于标识和管理这个特定的 I/O 请求。
+2. **I/O 请求投递**
+   - `WriteFile` 将 I/O 请求投递给操作系统的 I/O 管理器。
+   - 如果设备驱动程序支持异步 I/O，它将立即返回，通常返回 `FALSE` 并设置 `GetLastError` 为 `ERROR_IO_PENDING`，表示操作正在进行中。
+   - 这些请求会被添加到一个队列中，并由 I/O 管理器和设备驱动程序进行调度和处理。
+3. **I/O 请求处理**
+   - 操作系统内核会异步地处理这些 I/O 请求。当设备（如磁盘或网络设备）准备好执行 I/O 操作时，驱动程序会处理这些请求。
+   - 处理过程中，设备驱动程序会将数据写入设备，或从设备读取数据。
+4. **I/O 完成通知**
+   - 一旦 I/O 操作完成，设备驱动程序会通知操作系统内核，==内核会更新== `OVERLAPPED` 结构体中的状态信息。
+   - 如果 `OVERLAPPED` 结构体中包含一个事件句柄（`hEvent`），这个事件会被设置为有信号状态，通知等待该事件的线程 I/O 操作已经完成。
+   - 同时，I/O 完成端口（如果存在）会收到一个完成包，==通知与该 I/O 操作相关的线程==。
+5. **获取操作结果**
+   - 应用程序可以通过 `GetOverlappedResult` 函数来获取 I/O 操作的结果，包括实际写入或读取的字节数。
+   - `GetOverlappedResult` 函数会检查 `OVERLAPPED` 结构体的状态，如果操作已经完成，会返回操作结果；否则可以选择等待操作完成。
+
+1. 创建完成端口、连接句柄到完成端口`CreateIoCompletionPort()`
+
+```cpp
+HANDLE WINAPI CreateIoCompletionPort(
+  _In_     HANDLE    // 文件句柄： 串口h，网络socket ，INVALID_HANDLE_VALUE新完成端口
+  _In_opt_ HANDLE    // ,带连接的完成端口
+  _In_     ULONG_PTR CompletionKey,
+  _In_     DWORD     NumberOfConcurrentThreads // 完成端口允许创建的线程数： 适合 threads = cores, 经验 threads = 2*cores + 2
+);
+
+```
+
+```cpp
+
+// 功能1：创建一个新的完成端口
+HANDLE hCompletionPort = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 0);
+if (hCompletionPort == NULL) {
+    std::cerr << "CreateIoCompletionPort failed with error: " << GetLastError() << std::endl;
+    return 1;
+}
+// 创建一个文件句柄（例如网络套接字）
+HANDLE hFile = CreateFile(
+    "example.txt",
+    GENERIC_READ | GENERIC_WRITE,
+    0,
+    NULL,
+    OPEN_EXISTING,
+    FILE_FLAG_OVERLAPPED, // 指定采用异步的方式
+    NULL
+);
+if (hFile == INVALID_HANDLE_VALUE) {
+    std::cerr << "CreateFile failed with error: " << GetLastError() << std::endl;
+    CloseHandle(hCompletionPort);
+    return 1;
+}
+
+// 功能2：将文件句柄与完成端口关联
+if (CreateIoCompletionPort(hFile, hCompletionPort, (ULONG_PTR)hFile, 0) == NULL) {
+    std::cerr << "CreateIoCompletionPort failed with error: " << GetLastError() << std::endl;
+    CloseHandle(hFile);
+    CloseHandle(hCompletionPort);
+    return 1;
+}
+```
+
+## 16.3 overlappend
+
+`OVERLAPPED` 结构体是 Windows API 中用于支持异步（重叠）I/O 操作的关键数据结构。它包含用于描述异步 I/O 操作状态和信息的字段，并允许操作系统在 I/O 操作完成时通知应用程序。
+
+允许应用程序在发起 I/O 请求后无需等待其完成，可以继续执行其他任务。当 I/O 操作完成时，操作系统通过 `OVERLAPPED` 结构体通知应用程序。
+
+在 `Windows.h` 中，`OVERLAPPED` 结构体定义如下：
+
+```cpp
+typedef struct _OVERLAPPED {
+    ULONG_PTR Internal;      // I/O 操作的是否完成的状态
+    ULONG_PTR InternalHigh;  // I/O 操作完成时传输的字节数
+    union {                  // 指定从文件的哪个位置开始进行 I/O 操作
+        struct {
+            DWORD Offset;  
+            DWORD OffsetHigh;
+        };
+        PVOID Pointer; 
+    }; 
+    HANDLE hEvent;           // 当 I/O 操作完成时系统会设置此事件。用于通知应用程序操作完成
+} OVERLAPPED, *LPOVERLAPPED;：
+```
+
+下面是一个简单的示例，展示了如何使用 `OVERLAPPED` 结构体进行异步文件读取操作：
+
+```cpp
+#include <windows.h>
+#include <iostream>
+
+void WriteDataAsync(HANDLE hFile, const char* data, DWORD size) {
+    // 1 初始化 OVERLAPPED 结构体
+    OVERLAPPED overlapped = {0};
+    overlapped.Offset = 0;
+    overlapped.OffsetHigh = 0;
+    overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+
+    if (overlapped.hEvent == NULL) {
+        std::cerr << "Failed to create event, error: " << GetLastError() << std::endl;
+        return;
+    }
+
+    // 2 启动异步写操作
+    DWORD bytesWritten;
+    if (!WriteFile(hFile, data, size, NULL, &overlapped)) {
+        DWORD error = GetLastError();
+        if (error != ERROR_IO_PENDING) {
+            std::cerr << "WriteFile failed, error: " << error << std::endl;
+            CloseHandle(overlapped.hEvent);
+            return;
+        }
+    }
+
+    // 3 等待写操作完成
+    if (WaitForSingleObject(overlapped.hEvent, INFINITE) == WAIT_OBJECT_0) {
+        // 4 结果完成，获取
+        if (GetOverlappedResult(hFile, &overlapped, &bytesWritten, FALSE)) {
+            std::cout << "Successfully wrote " << bytesWritten << " bytes asynchronously." << std::endl;
+        } else {
+            std::cerr << "GetOverlappedResult failed, error: " << GetLastError() << std::endl;
+        }
+    } else {
+        std::cerr << "WaitForSingleObject failed, error: " << GetLastError() << std::endl;
+    }
+
+    // 清理
+    CloseHandle(overlapped.hEvent);
+}
+
+int main() {
+    // 打开文件，使用 FILE_FLAG_OVERLAPPED 标志
+    HANDLE hFile = CreateFile(
+        "example.txt",                  // 文件名
+        GENERIC_WRITE,                  // 写权限
+        0,                              // 共享模式
+        NULL,                           // 安全属性
+        CREATE_ALWAYS,                  // 创建模式
+        FILE_FLAG_OVERLAPPED,           // 文件属性
+        NULL                            // 模板文件句柄
+    );
+
+    if (hFile == INVALID_HANDLE_VALUE) {
+        std::cerr << "Failed to open file, error: " << GetLastError() << std::endl;
+        return 1;
+    }
+
+    // 要写入的数据
+    const char data[] = "Hello, Async World!";
+    DWORD size = sizeof(data);
+
+    // 使用异步方式写数据
+    WriteDataAsync(hFile, data, size);
+
+    // 关闭文件句柄
+    CloseHandle(hFile);
+    return 0;
+}
+
+```
+
+## 16.4 WSAIoctl获取扩展指针
+
+* winsock2.h提供的socket功能不够用
+* 需要适配更多的功能，需要通过WSAIoctl获取指向新功能的socket，由func指向
+
+```cpp
+WSAIoctl(
+    sock,
+    SIO_GET_EXTENSION_FUNCTION_POINTER,
+    &guid,
+    sizeof(guid),
+    &func,
+    sizeof(func),
+    &bytes,
+    nullptr,
+    nullptr
+);
+
+```
+
+
+
+```cpp
+#include <winsock2.h>
+#include <mswsock.h>
+#include <iostream>
+
+GUID guidAcceptEx = WSAID_ACCEPTEX;
+
+int main() {
+    WSADATA wsaData;
+    SOCKET sock;
+    int result;
+    
+// 初始化 Winsock
+result = WSAStartup(MAKEWORD(2, 2), &wsaData);
+if (result != 0) {
+    std::cerr << "WSAStartup failed with error: " << result << std::endl;
+    return 1;
+}
+
+// 创建套接字
+sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+if (sock == INVALID_SOCKET) {
+    std::cerr << "socket failed with error: " << WSAGetLastError() << std::endl;
+    WSACleanup();
+    return 1;
+}
+
+// 获取 AcceptEx 函数指针  // 同样可以获取 ConnectEx函数指针
+LPFN_ACCEPTEX lpfnAcceptEx = NULL;
+DWORD bytes;
+result = WSAIoctl(
+    sock,
+    SIO_GET_EXTENSION_FUNCTION_POINTER,
+    &guidAcceptEx,
+    sizeof(guidAcceptEx),
+    &lpfnAcceptEx,
+    sizeof(lpfnAcceptEx),
+    &bytes,
+    NULL,
+    NULL
+);
+
+// 判断扩展是否获取成功
+if (result == SOCKET_ERROR) {
+    std::cerr << "WSAIoctl failed with error: " << WSAGetLastError() << std::endl;
+    closesocket(sock);
+    WSACleanup();
+    return 1;
+}
+
+// 确认获取到的函数指针
+if (lpfnAcceptEx != NULL) {
+    std::cout << "Successfully retrieved AcceptEx function pointer." << std::endl;
+} else {
+    std::cerr << "Failed to retrieve AcceptEx function pointer." << std::endl;
+}
+
+// 清理
+closesocket(sock);
+WSACleanup();
+return 0;
+```
+}
