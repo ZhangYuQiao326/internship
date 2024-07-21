@@ -990,7 +990,7 @@ void *DllUtils::dllSymbol(void *dll, const char *funcName)
 | 右移>> | 左侧根据符号位填充（对无符号数`uint8_t`则用0填充)            |                              |
 |        |                                                              |                              |
 
-## 8.0 低位和高位
+## 8.0 字节内部的低位和高位
 
 在计算机科学和数字电子学中，低位（Least Significant Bit, LSB）在二进制数表示中位于右边，这种表示方式称为 **小端序**（Little-endian）。理解这种表示方法的原因需要从几个角度进行探讨，包括历史背景、数字表示的规范和计算机体系结构。
 
@@ -1034,8 +1034,8 @@ void *DllUtils::dllSymbol(void *dll, const char *funcName)
 
 有大端和小端之分，协议封装时，会给出：**低字节在前，高字节在后**等要求
 
-1. 获取时间、长度、个数等值
-2. 获取的结果是默认按照大端序：**高字节在前，低字节在后** 的字节序
+1. 获取到的十进制==时间、长度、个数等值
+2. 获取的结果是默认按照==大端序==：**高字节在前，低字节在后** 的字节序
 3. 按照要求，调为小端序
 
 <img src="https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202406201054999.png" alt="image-20240620105412588" style="zoom: 80%;" />
