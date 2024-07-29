@@ -411,6 +411,28 @@ std::advance(it,1);
 list1.splice(list1.end(), list1, it);
 ```
 
+## std::string
+
+* 转化
+
+| `string->`    | 函数                           |
+| ------------- | ------------------------------ |
+| `const char*` | `const char* p = str.to_ctr()` |
+| `int`         | `int i = std::stoi(str)`       |
+
+| `->std::string` | 函数                                        |
+| --------------- | ------------------------------------------- |
+| `const char*`   | `string str = std::string(p)`               |
+| `int`           | 转化数值 `string str = std::to_string(num)` |
+
+* 格式化字符串
+
+```cpp
+std::string result = std::format("The value of num is {} and the value of pi is {:.2f}", num, pi);
+```
+
+
+
 ## std::string_view
 
 `std::string_view` 是 C++17 引入的一种用于表示字符串的非所有权视图（view）。它提供了一种轻量级、非拥有（non-owning）的方式来引用和操作字符串数据，而无需复制字符串内容。这在需要只读访问字符串的场景中非常有用，可以避免不必要的内存分配和数据复制，从而提高性能。
