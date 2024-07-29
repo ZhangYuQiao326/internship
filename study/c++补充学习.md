@@ -364,7 +364,7 @@ auto myTuple = std::make_tuple(arg1, arg2, arg3, ...);
 
 ```
 
-## std:：list
+## std::list
 
 | 函数                                                         | 解释                                                         |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -411,7 +411,80 @@ std::advance(it,1);
 list1.splice(list1.end(), list1, it);
 ```
 
+## std::string_view
 
+`std::string_view` 是 C++17 引入的一种用于表示字符串的非所有权视图（view）。它提供了一种轻量级、非拥有（non-owning）的方式来引用和操作字符串数据，而无需复制字符串内容。这在需要只读访问字符串的场景中非常有用，可以避免不必要的内存分配和数据复制，从而提高性能。
+
+1. **轻量级**：`std::string_view` 只包含一个指向字符串数据的指针和一个表示字符串长度的大小，因此其大小和效率类似于指针操作。
+2. **非所有权**：`std::string_view` 不管理字符串的生命周期，它只是一个视图，因此不负责字符串内存的分配和释放。
+3. **适配各种字符串类型**：`std::string_view` 可以适配 C 风格字符串（`const char*`）、`std::string`、字符串字面量等各种字符串类型。
+4. **高效传递和操作**：由于不涉及复制操作，使用 `std::string_view` 作为函数参数可以避免不必要的开销，适合传递大字符串。
+
+#### 1：基本使用
+```cpp
+#include <iostream>
+#include <string>
+#include <string_view>
+
+void print_string(std::string_view sv) {
+    std::cout << sv << std::endl;
+}
+
+int main() {
+    const char* cstr = "Hello, World!";
+    std::string str = "Hello, C++!";
+    std::string_view sv1 = cstr;  // 从 C 风格字符串创建 string_view
+    std::string_view sv2 = str;   // 从 std::string 创建 string_view
+    std::string_view sv3 = "Hello, string_view!";  // 从字符串字面量创建 string_view
+
+    print_string(sv1);
+    print_string(sv2);
+    print_string(sv3);
+
+    return 0;
+}
+```
+
+#### 2：截取子字符串
+`std::string_view` 提供了方便的子字符串截取方法。
+```cpp
+#include <iostream>
+#include <string_view>
+
+int main() {
+    std::string_view sv = "Hello, string_view!";
+    std::string_view sub_sv = sv.substr(7, 11);  // 截取 "string_view"
+    std::cout << sub_sv << std::endl;  // 输出: string_view
+
+    return 0;
+}
+```
+
+#### 3 处理不可变字符串
+使用 `std::string_view` 可以避免对原始字符串的修改，从而保证数据的不可变性。
+```cpp
+#include <iostream>
+#include <string_view>
+
+void process_string(std::string_view sv) {
+    // 只读操作，不会修改原始字符串
+    std::cout << sv << std::endl;
+}
+
+int main() {
+    std::string str = "Hello, World!";
+    process_string(str);  // 可以传递 std::string
+    process_string("Hello, C++!");  // 可以传递字符串字面量
+    process_string(std::string_view("Temporary string_view"));  // 临时 string_view
+
+    return 0;
+}
+```
+
+### 注意事项
+- `std::string_view` 只是一个视图，不能用于需要修改字符串的场景。
+- 由于 `std::string_view` 不拥有字符串数据，因此需要确保原始字符串在 `std::string_view` 使用期间是有效的。
+- 使用 `std::string_view` 可以避免不必要的字符串复制和内存分配，提高性能。
 
 # 五 模板
 
