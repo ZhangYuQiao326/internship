@@ -641,7 +641,7 @@ int main(int argc, char *argv[]) {
 
 ```
 
-####  5.3.1 表格设计
+####  5.3.1 表格格式设计
 
 ##### 1 基础操作
 
@@ -684,6 +684,7 @@ QStringList str;
 str << QString::number(index + 1) << QString::fromLocal8Bit(data.name.c_str()) << QString::number(data.kglAd) << QString::fromLocal8Bit(state.c_str())<< QString::number(0);
 
 // 设置数据的时候修改单个单元格的编辑模式
+// 不再使用 table->setEditTriggers(QAbstractItemView::NoEditTriggers);
 for (int col = 0; col < str.size() && col < table->columnCount(); ++col)
 {
 	QTableWidgetItem* item = new QTableWidgetItem(str[col]);
@@ -741,7 +742,7 @@ item->setData(Qt::DecorationRole, QIcon("icon.png")); // 设置图标
 item->setData(Qt::ToolTipRole, "This is a tooltip"); // 设置工具提示
 ```
 
-##### 2 下拉框
+##### 2 表格添加下拉框
 
 | 接口                                                         | 描述                   |
 | ------------------------------------------------------------ | ---------------------- |
@@ -775,6 +776,7 @@ int main(int argc, char *argv[]) {
     table.setHorizontalHeaderLabels({"Name", "State"});
     table.horizontalHeader()->setStretchLastSection(true);
 
+    // 必须先创建出单元格/行后，才能插入conbox
     // 在表格的第二列添加QComboBox来选择状态
     for (int row = 0; row < table.rowCount(); ++row) {
         QComboBox *comboBox = new QComboBox();
@@ -1063,6 +1065,20 @@ static void addOneRowInTable(QTableWidget *table, QStringList vals)
 		item = new QTableWidgetItem(vals[col]);
 		table->setItem(count, col, item);
 
+	}
+}
+void VOBCEmulatorForm::loadData()
+{
+	QTableWidget* table = ui->tableWidget_ztl;
+
+	auto config = m_param->GetData().vecTrainStateConfig;
+	QStringList vals;
+	static int index = 1;
+	for (auto& data : config)
+	{
+		vals << QString::number(index++) << QString::fromLocal8Bit(data.name.c_str()) << QString::number(0) << QString::number(0);
+		addOneRowInTable(table, vals);
+		vals.clear();
 	}
 }
 ```
