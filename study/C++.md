@@ -472,6 +472,11 @@ int main()
 
 ```cpp
 // 初始化
+// 二维数组定义方式
+	// 1. 数据类型  数组名[行数][列数];
+	// 2. 数据类型  数组名[行数][列数] = { {数据1，数据2 } ，{数据3，数据4 } };
+	// 3. 数据类型  数组名[行数][列数] = { 数据1，数据2，数据3，数据4 };
+	// 4. 数据类型  数组名[][列数] = { 数据1，数据2，数据3，数据4 };
 int arr[2][3];
 
 int arr[2][3] = {
@@ -481,7 +486,11 @@ int arr[2][3] = {
 
 int arr[2][3] = {1,2,3,4,5,6}
 
-int arr [][3] = {1,2,3,4,5,6}
+int arr [][3] = {1,2,3,4,5,6}; // 正确，第二个参数必须定义，且省略行时，必须赋值
+
+int arr[][3]; // 错误，没有赋值，无法推到行数
+
+int arr[3][]; // 不合法，行可以省略，列不可以省略
 
 
 // 打印值
@@ -14781,7 +14790,7 @@ int* ptr = NULL; // 使用 NULL 初始化指针
   内存中有地址，可以修改的值
 
   1. **变量：** 变量是最常见的左值，因为它们具有名称，可以用于存储和修改值。
-        
+     
      ```cpp
      int x = 10; // x 是左值
      int y = 20;
@@ -14795,7 +14804,7 @@ int* ptr = NULL; // 使用 NULL 初始化指针
      ```
 
   3. **引用：** 引用也是左值，因为它们是变量的别名，可以用于修改原始变量的值。
-        
+     
      ```cpp
      int y = 20;
      int& ref = y; // ref 是左值，可以修改 y 的值
@@ -14804,7 +14813,7 @@ int* ptr = NULL; // 使用 NULL 初始化指针
      ```
      
   4. **函数返回的左值：** 如果函数返回的是一个具体的值（而不是临时对象或表达式的结果），那么它是左值。
-        
+     
      ```cpp
      int getValue() {
          return 100;
@@ -19705,7 +19714,7 @@ public:
 >    mapped_type& operator[] (const key_type& k){
 >        return (*((this->insert(make_pair(k,mapped_type()))).first)).second;
 >    }
->                                                                                  
+>                                                                                     
 >    1. map["苹果"] = 2;
 >    2. key不存在，map[key] = val，即先插入<key, T()>, 在修改默认的val
 >    3. key存在，直接修改val
@@ -19736,19 +19745,19 @@ public:
 >               for(auto e : words){
 >                   m[e] ++;
 >               }
->                                                                                                                                                                   
+>                                                                                                                                                                         
 >               // kv呼唤，按照val排序
 >               multimap<int,string,greater<int>> mmp;
 >               for(const auto& pair : m){
 >                   mmp.insert(make_pair(pair.second, pair.first));
 >               }
->                                                                                                                                                                   
+>                                                                                                                                                                         
 >               auto it = mmp.begin();
 >               vector<string> res;
 >               for(int i = 0; i < k; ++i){
 >                   res.push_back(it->second);
 >                   ++it;
->                                                                                                                                                                   
+>                                                                                                                                                                         
 >               }
 >               return res;
 >           }
