@@ -4882,3 +4882,143 @@ WSACleanup();
 return 0;
 ```
 }
+
+# 17 Window下udp协议
+
+``` cpp
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <iostream>
+
+#pragma comment(lib, "ws2_32.lib")
+
+int main() {
+    WSADATA wsaData;
+    SOCKET serverSocket;
+    sockaddr_in serverAddr, clientAddr;
+    int clientAddrSize, recvLen;
+    char recvBuf[1024];
+
+    // 初始化Winsock
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+        std::cerr << "WSAStartup failed." << std::endl;
+        return 1;
+    }
+
+    // 创建UDP套接字
+    serverSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if (serverSocket == INVALID_SOCKET) {
+        std::cerr << "Socket creation failed." << std::endl;
+        WSACleanup();
+        return 1;
+    }
+
+    // 配置服务器地址结构
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_addr.s_addr = INADDR_ANY;  // 监听服务器上所有地址
+    serverAddr.sin_port = htons(8888);
+
+    // 绑定套接字
+    if (bind(serverSocket, (sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR) {
+        std::cerr << "Bind failed." << std::endl;
+        closesocket(serverSocket);
+        WSACleanup();
+        return 1;
+    }
+
+    std::cout << "Server is running and waiting for incoming messages..." << std::endl;
+	
+    // bind后可以接收发送数据
+    // 循环接收数据
+    while (true) {
+        clientAddrSize = sizeof(clientAddr);
+        // 阻塞
+        recvLen = recvfrom(serverSocket, recvBuf, 1024, 0, (sockaddr*)&clientAddr, &clientAddrSize);
+        if (recvLen == SOCKET_ERROR) {
+            std::cerr << "recvfrom() failed." << std::endl;
+            break;
+        }
+
+        recvBuf[recvLen] = '\0'; // 确保字符串以空字符结尾
+        std::cout << "Received message: " << recvBuf << std::endl;
+
+        // 发送响应回客户端
+        const char* response = "Message received";
+        sendto(serverSocket, response, strlen(response), 0, (sockaddr*)&clientAddr, clientAddrSize);
+    }
+
+    // 关闭套接字和清理Winsock
+    closesocket(serverSocket);
+    WSACleanup();
+
+    return 0;
+}
+```
+
+```cpp
+// client
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <iostream>
+
+#pragma comment(lib, "ws2_32.lib")
+
+int main() {
+    WSADATA wsaData;
+    SOCKET clientSocket;
+    sockaddr_in serverAddr;
+    char sendBuf[1024] = "Hello, Server!";
+    char recvBuf[1024];
+    int serverAddrSize, recvLen;
+
+    // 初始化Winsock
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+        std::cerr << "WSAStartup failed." << std::endl;
+        return 1;
+    }
+
+    // 创建UDP套接字
+    clientSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if (clientSocket == INVALID_SOCKET) {
+        std::cerr << "Socket creation failed." << std::endl;
+        WSACleanup();
+        return 1;
+    }
+
+    // 配置服务器地址结构
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1"); // 服务器IP地址
+    serverAddr.sin_port = htons(8888); // 服务器端口
+
+    // 发送数据到服务器
+    if (sendto(clientSocket, sendBuf, strlen(sendBuf), 0, (sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR) {
+        std::cerr << "sendto() failed." << std::endl;
+        closesocket(clientSocket);
+        WSACleanup();
+        return 1;
+    }
+
+    std::cout << "Message sent to server." << std::endl;
+
+    // 接收服务器的响应
+    serverAddrSize = sizeof(serverAddr);
+    recvLen = recvfrom(clientSocket, recvBuf, 1024, 0, (sockaddr*)&serverAddr, &serverAddrSize);
+    if (recvLen == SOCKET_ERROR) {
+        std::cerr << "recvfrom() failed." << std::endl;
+        closesocket(clientSocket);
+        WSACleanup();
+        return 1;
+    }
+
+    recvBuf[recvLen] = '\0'; // 确保字符串以空字符结尾
+    std::cout << "Received response from server: " << recvBuf << std::endl;
+
+    // 关闭套接字和清理Winsock
+    closesocket(clientSocket);
+    WSACleanup();
+
+    return 0;
+}
+
+```
+
