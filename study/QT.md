@@ -577,6 +577,8 @@ setCentralWidget(edit);
 
 ```cpp
 QComboBox* comb = new QComboBox;
+// 获取当前的索引
+comb -> currentIndex();
 // 填入选项
 comb->addItems({ QString::fromLocal8Bit("占用"), QString::fromLocal8Bit("空闲") });
 
@@ -742,7 +744,7 @@ item->setData(Qt::DecorationRole, QIcon("icon.png")); // 设置图标
 item->setData(Qt::ToolTipRole, "This is a tooltip"); // 设置工具提示
 ```
 
-##### 2 表格添加下拉框
+##### 2 单元格添加下拉框
 
 | 接口                                                         | 描述                   |
 | ------------------------------------------------------------ | ---------------------- |
@@ -750,66 +752,55 @@ item->setData(Qt::ToolTipRole, "This is a tooltip"); // 设置工具提示
 | `QComboBox *comboBox = qobject_cast<QComboBox *>(table.cellWidget(row, col));` | 获取单元格内的combobox |
 
 ```cpp
-#include <QApplication>
-#include <QTableWidget>
-#include <QComboBox>
-#include <QVBoxLayout>
-#include <QPushButton>
-#include <QMessageBox>
-#include <QHeaderView>
-
-// 将状态索引转换为2位二进制表示
-uint8_t packState(int stateIndex) {
-    return static_cast<uint8_t>(stateIndex) & 0x03; // 确保只取2个比特位
+// 必须先创建出单元格/行后，才能插入conbox
+// 在表格的第二列添加QComboBox来选择状态
+for (int row = 0; row < table.rowCount(); ++row) {
+    QComboBox *comboBox = new QComboBox();
+    comboBox->addItems({"State 0", "State 1", "State 2", "State 3"}); // 4种状态
+    table.setCellWidget(row, 1, comboBox);
 }
 
-int main(int argc, char *argv[]) {
-    QApplication app(argc, argv);
+layout.addWidget(&table);
 
-    QWidget window;
-    QVBoxLayout layout(&window);
+// 在表格下添加一个按钮，用于提交选择
+QPushButton *submitButton = new QPushButton("Submit");
+layout.addWidget(submitButton);
 
-    // 创建一个表格，2行2列作为示例
-    QTableWidget table(2, 2);
-
-    // 设置表头
-    table.setHorizontalHeaderLabels({"Name", "State"});
-    table.horizontalHeader()->setStretchLastSection(true);
-
-    // 必须先创建出单元格/行后，才能插入conbox
-    // 在表格的第二列添加QComboBox来选择状态
+// 当点击提交按钮时，读取每一行的状态
+QObject::connect(submitButton, &QPushButton::clicked, [&]() {
+    uint8_t packedData = 0;
     for (int row = 0; row < table.rowCount(); ++row) {
-        QComboBox *comboBox = new QComboBox();
-        comboBox->addItems({"State 0", "State 1", "State 2", "State 3"}); // 4种状态
-        table.setCellWidget(row, 1, comboBox);
+        // 将单元格转化为combobox控件
+        QComboBox *comboBox = qobject_cast<QComboBox *>(table.cellWidget(row, 1));
+        if (comboBox) {
+            int stateIndex = comboBox->currentIndex(); // 获取选中的状态索引
+            uint8_t stateBits = packState(stateIndex);
+            packedData |= (stateBits << (row * 2)); // 假设每行占用2个比特位
+        }
     }
 
-    layout.addWidget(&table);
 
-    // 在表格下添加一个按钮，用于提交选择
-    QPushButton *submitButton = new QPushButton("Submit");
-    layout.addWidget(submitButton);
+```
 
-    // 当点击提交按钮时，读取每一行的状态
-    QObject::connect(submitButton, &QPushButton::clicked, [&]() {
-        uint8_t packedData = 0;
-        for (int row = 0; row < table.rowCount(); ++row) {
-            // 将单元格转化为combobox控件
-            QComboBox *comboBox = qobject_cast<QComboBox *>(table.cellWidget(row, 1));
-            if (comboBox) {
-                int stateIndex = comboBox->currentIndex(); // 获取选中的状态索引
-                uint8_t stateBits = packState(stateIndex);
-                packedData |= (stateBits << (row * 2)); // 假设每行占用2个比特位
-            }
-        }
-        QString message = QString("Packed Data: 0x%1").arg(packedData, 2, 16, QChar('0'));
-        QMessageBox::information(&window, "Packed State", message);
-    });
+```cpp
+// 指定单元格添加下拉框
+comboBox= new QComboBox();
+comboBox->addItems({ "IL-RM", "ITC-CM", "ITC-AM", "CBTC-CM", "CBTC-AM"});
+table->setCellWidget(count, 3, comboBox);
+// 添加信号机制
+connect(comboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &VOBCEmulatorForm::onComboBoxIndexChanged);
+```
 
-    window.show();
-    return app.exec();
+```cpp
+// 修改下拉框执行操作
+void VOBCEmulatorForm::onComboBoxIndexChanged(int index)
+{
+	QComboBox* comboBox = qobject_cast<QComboBox*>(sender());
+	if (comboBox == comboBox_zgjsms)
+	{
+		m_map[curTrain].zgjsms = m_explains[1][index];
+	}
 }
-
 ```
 
 
@@ -1110,11 +1101,13 @@ void highLightRows(std::vector<int> vecRow)
 ui->tableWidget_bjxx->setSelectionBehavior(QAbstractItemView::SelectRows);
 ```
 
-##### 5 双击修改单元格
+##### 5 双击单元格触发
 
 ```cpp
 connect(table, &QTableWidget::cellDoubleClicked, this, &JZEmulatorForm::on_CellDoubleClicked);
 
+private slots:
+	void on_CellClicked(int row, int column);
 void JZEmulatorForm::on_CellDoubleClicked(int row, int column)
 {
     // 获取当前调用函数的表格
@@ -1154,6 +1147,38 @@ void JZEmulatorForm::on_CellDoubleClicked(int row, int column)
 	}
 }
 ```
+
+##### 6 修改单元格触发
+
+```cpp
+// 指定操作不触发单元格
+// 阻断信号
+table->blockSignals(true);
+xxx
+table->blockSignals(false);
+```
+
+```cpp
+connect(ui->tableWidget_mnl, &QTableWidget::cellChanged, this, &VOBCEmulatorForm::on_CellChanged);
+
+private slots:
+	void on_CellChanged(int row, int column);
+
+void VOBCEmulatorForm::on_CellChanged(int row, int column)
+{
+	auto mnl = m_map[curTrain].analog;
+	QTableWidget* table = qobject_cast<QTableWidget*>(sender());
+	if (column == 2)
+	{
+		QTableWidgetItem* item = table->item(row, column);
+		int value = item->text().toInt();
+		if (row == 0) mnl.lcdqsd = value;
+		else if (row == 1) mnl.lczdsd = value;
+	}	
+}
+```
+
+
 
 ##### 6 清除表格数据
 
@@ -3070,6 +3095,46 @@ int main(int argc, char *argv[])
     return 0;
 }
 ```
+
+### 12.5 QDateTime
+
+```cpp
+// 获取年月日时分秒
+#include <QCoreApplication>
+#include <QDateTime>
+#include <QDebug>
+
+int main(int argc, char *argv[])
+{
+    QCoreApplication a(argc, argv);
+
+    // 获取当前日期和时间
+    QDateTime current = QDateTime::currentDateTime();
+
+    // 获取年月日时分秒
+    uint8_t year = current.date().year() - 2000;  // 假设年份范围为2000-2099
+    uint8_t month = current.date().month();
+    uint8_t day = current.date().day();
+    uint8_t hour = current.time().hour();
+    uint8_t minute = current.time().minute();
+    uint8_t second = current.time().second();
+
+    // 打印结果
+    qDebug() << "Year:" << year;
+    qDebug() << "Month:" << month;
+    qDebug() << "Day:" << day;
+    qDebug() << "Hour:" << hour;
+    qDebug() << "Minute:" << minute;
+    qDebug() << "Second:" << second;
+
+    return a.exec();
+}
+
+```
+
+
+
+
 
 ## 13 布局设计
 
