@@ -1178,8 +1178,8 @@ m_protocalPacket[11] = static_cast<uint8_t>(protocalDataLen >> 8 & 0xFF); // 高
 uint8_t bodyByte = 0; // 临时处理字节
 int bitCount = 0;  // 记录当前 bodyByte 中已经填充了多少位
 
-for (auto d : vec) {
-    bodyByte = (bodyByte << 1) | d;  // 左移，加入一位
+for (auto bit : vec) {
+    bodyByte = (bodyByte << 1) | bit;  // 左移，加入一位
     bitCount++;
 
     if (bitCount == 8) {  // 检查是否已填满 8 位
