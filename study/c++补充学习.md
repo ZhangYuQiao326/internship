@@ -332,6 +332,52 @@ uint32_t threadSize = std::thread::hardware_concurrency();
 
 # 四 数据结构
 
+## std::cout
+
+1. 控制输出的小数精度
+
+```cpp
+#include <iomanip>
+
+double i = 2.334;
+std::cout << std::fixed << setpricision(2) << i << endl;
+```
+
+2、 输入n组，含有m个整数
+
+```cpp
+int n, m;
+while(cin >> n)
+{
+    while(n--)
+    {
+        cin >> m;
+    }
+}
+```
+
+
+
+3、 输入n组，字符串
+
+* `cin >> s;`： 只能读取一个单词，遇到空格、回车返回
+* `getline(cin, s);`：读取一行句子，遇到回车才返回
+
+```cpp
+int n;
+string s;
+while(cin >> n)
+{
+    getchar(); // 吸收掉输入n后的回车
+    while(n--)
+    {
+        getline(cin, s);
+    }
+}
+```
+
+
+
 ## std::iterator
 
 | fun                    | exp                                                          |
@@ -1128,6 +1174,8 @@ void *DllUtils::dllSymbol(void *dll, const char *funcName)
 - 数据读取和写入更加简化和高效，尤其是对数据进行部分处理时。
 
 例如，对于一个 `32` 位的整数 `0x12345678`，在小端序系统中，它将被存储为 `78 56 34 12`（从最低到最高地址）。
+
+虽然dubug显示的整数还是12345678，但是实际存储是 78 56 34 12，查看时，系统自动将其转为大端序
 
 ## 8.1 封装协议顺序
 
