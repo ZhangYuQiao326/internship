@@ -1,6 +1,6 @@
-<mxfile host="Electron" modified="2024-08-13T08:25:46.925Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.4.0 Chrome/120.0.6099.109 Electron/28.1.0 Safari/537.36" etag="kcTylQn5x11HLbgSKc2z" version="24.4.0" type="device">
+<mxfile host="Electron" modified="2024-08-16T07:53:48.227Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.4.0 Chrome/120.0.6099.109 Electron/28.1.0 Safari/537.36" etag="ALwpBU6isD7KP_V0LIwQ" version="24.4.0" type="device">
   <diagram name="第 1 页" id="kDpwMAGy_JXWOYc4Z3X5">
-    <mxGraphModel dx="18597" dy="12384" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="0" page="0" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="18658" dy="12453" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="0" page="0" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -1268,8 +1268,8 @@
         <mxCell id="Hm7bSxBGGL3MLhVtQ9wb-207" value="2、将两种结构挂在Loop的HandleQueue上" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Helvetica;fontSize=15;fontColor=default;" parent="1" vertex="1">
           <mxGeometry x="-11812" y="-3529.75" width="302" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="Hm7bSxBGGL3MLhVtQ9wb-209" value="&lt;font style=&quot;font-size: 12px;&quot;&gt;当前时间&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Helvetica;fontSize=15;fontColor=default;" parent="1" vertex="1">
-          <mxGeometry x="-13215.5" y="-6409" width="66" height="30" as="geometry" />
+        <mxCell id="Hm7bSxBGGL3MLhVtQ9wb-209" value="&lt;font style=&quot;font-size: 12px;&quot;&gt;当前时间(unix时间戳)&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Helvetica;fontSize=15;fontColor=default;" parent="1" vertex="1">
+          <mxGeometry x="-13217" y="-6407" width="132" height="30" as="geometry" />
         </mxCell>
         <mxCell id="Hm7bSxBGGL3MLhVtQ9wb-210" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;fontFamily=Helvetica;fontSize=15;fontColor=default;strokeColor=#FF3333;" parent="1" edge="1">
           <mxGeometry width="100" relative="1" as="geometry">
@@ -1307,8 +1307,8 @@
             <mxPoint x="-12692" y="-2583.03" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="Hm7bSxBGGL3MLhVtQ9wb-220" value="超时绝对时间，用于和loop-&amp;gt;timeus时间比较，判断超时" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Helvetica;fontSize=15;fontColor=default;" parent="1" vertex="1">
-          <mxGeometry x="-12537" y="-2648.25" width="389" height="30" as="geometry" />
+        <mxCell id="Hm7bSxBGGL3MLhVtQ9wb-220" value="超时绝对时间，用于和loop-&amp;gt;timeus时间比较，判断超时，微妙为单位" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Helvetica;fontSize=15;fontColor=default;" parent="1" vertex="1">
+          <mxGeometry x="-12546" y="-2650.61" width="479" height="30" as="geometry" />
         </mxCell>
         <mxCell id="Hm7bSxBGGL3MLhVtQ9wb-221" value="1 处理完所有超时事件" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Helvetica;fontSize=15;fontColor=default;" parent="1" vertex="1">
           <mxGeometry x="-13658" y="-6401.75" width="166" height="30" as="geometry" />
@@ -2307,7 +2307,7 @@
           <mxGeometry x="-13738" y="-2915.25" width="61" height="36" as="geometry" />
         </mxCell>
         <mxCell id="KKng5iTVXd5vAn8HRnes-17" value="" style="shape=singleArrow;whiteSpace=wrap;html=1;arrowWidth=0.4;arrowSize=0.4;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
-          <mxGeometry x="-13124" y="-2731.25" width="144" height="29" as="geometry" />
+          <mxGeometry x="-13124" y="-2731.25" width="168" height="29" as="geometry" />
         </mxCell>
         <mxCell id="KKng5iTVXd5vAn8HRnes-18" value="入口" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
           <mxGeometry x="-13102" y="-2764.25" width="42" height="26" as="geometry" />
@@ -2389,8 +2389,8 @@
         <mxCell id="KKng5iTVXd5vAn8HRnes-47" value="当前的timer在小根堆中的序号" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
           <mxGeometry x="-12542.5" y="-2738.25" width="177" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="KKng5iTVXd5vAn8HRnes-48" value="超时相对时间10s" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-          <mxGeometry x="-12546" y="-2687.5" width="109" height="26" as="geometry" />
+        <mxCell id="KKng5iTVXd5vAn8HRnes-48" value="配置设置超时时间（相对时间）ms为单位，传入时ms x 1000 变为微妙" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="-12547" y="-2691.5" width="393" height="26" as="geometry" />
         </mxCell>
         <mxCell id="KKng5iTVXd5vAn8HRnes-49" value="相对超时时间" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
           <mxGeometry x="-13336.5" y="-2947.5" width="90" height="26" as="geometry" />
@@ -2480,15 +2480,15 @@
         <mxCell id="KKng5iTVXd5vAn8HRnes-78" value="loopTimeStop()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
           <mxGeometry x="-12920" y="-2460.5" width="112" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="KKng5iTVXd5vAn8HRnes-79" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" parent="1" target="KKng5iTVXd5vAn8HRnes-78" edge="1">
+        <mxCell id="KKng5iTVXd5vAn8HRnes-79" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;" parent="1" target="KKng5iTVXd5vAn8HRnes-78" edge="1">
           <mxGeometry width="100" relative="1" as="geometry">
-            <mxPoint x="-13125" y="-2220.323529411764" as="sourcePoint" />
+            <mxPoint x="-13125" y="-2433" as="sourcePoint" />
             <mxPoint x="-13040" y="-2349.5" as="targetPoint" />
             <Array as="points" />
           </mxGeometry>
         </mxCell>
         <mxCell id="KKng5iTVXd5vAn8HRnes-80" value="超时" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-          <mxGeometry x="-12967" y="-2323.5" width="42" height="26" as="geometry" />
+          <mxGeometry x="-13049.5" y="-2424.86" width="42" height="26" as="geometry" />
         </mxCell>
         <mxCell id="KKng5iTVXd5vAn8HRnes-81" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;entryX=0.622;entryY=1.005;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" target="Hm7bSxBGGL3MLhVtQ9wb-218" edge="1">
           <mxGeometry width="100" relative="1" as="geometry">
@@ -6442,7 +6442,7 @@
           <mxGeometry x="-15142" y="-6750" width="236" height="41" as="geometry" />
         </mxCell>
         <mxCell id="ZS_sFs_uuuY6QGQSXCdn-41" value="小根堆，检测超时节点" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-          <mxGeometry x="-12851" y="-6249" width="138" height="26" as="geometry" />
+          <mxGeometry x="-12854.5" y="-6414.75" width="138" height="26" as="geometry" />
         </mxCell>
         <mxCell id="ZS_sFs_uuuY6QGQSXCdn-43" value="监听完成端口&lt;div&gt;执行回调函数&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
           <mxGeometry x="-13118" y="-6770" width="90" height="41" as="geometry" />
@@ -9035,10 +9035,10 @@
         <mxCell id="2KHjTE12ZW4tRdO1U0qP-11" value="应用层" style="whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
           <mxGeometry x="-11948.5" y="-7906" width="126.5" height="33" as="geometry" />
         </mxCell>
-        <mxCell id="xHOS2z4jJ15pLhpaF6VN-1" value="&amp;nbsp;ProtocolManger ：&amp;nbsp;handleInterfaceData 检查是否读入数据" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+        <mxCell id="xHOS2z4jJ15pLhpaF6VN-1" value="&amp;nbsp;ProtocolManger ：&amp;nbsp;handleInterfaceData 检查是否读入数据" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
           <mxGeometry x="-2635" y="-614" width="332" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="xHOS2z4jJ15pLhpaF6VN-3" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;exitX=1.002;exitY=0.543;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="djS_8nRHflJvlsskyuoy-141" target="djS_8nRHflJvlsskyuoy-180">
+        <mxCell id="xHOS2z4jJ15pLhpaF6VN-3" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;exitX=1.002;exitY=0.543;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="djS_8nRHflJvlsskyuoy-141" target="djS_8nRHflJvlsskyuoy-180" edge="1">
           <mxGeometry width="100" relative="1" as="geometry">
             <mxPoint x="-3146" y="-1039" as="sourcePoint" />
             <mxPoint x="-2636" y="-1130" as="targetPoint" />
@@ -9048,8 +9048,83 @@
         <mxCell id="djS_8nRHflJvlsskyuoy-180" value="无法进入断点，即没有接受到数据" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;rotation=-10;" parent="1" vertex="1">
           <mxGeometry x="-2985.25" y="-1103" width="198" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="xHOS2z4jJ15pLhpaF6VN-5" value="VOBCManger.cpp: init(): 98行，没有读入解释量类型，导致495行读入explainType越界" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+        <mxCell id="xHOS2z4jJ15pLhpaF6VN-5" value="VOBCManger.cpp: init(): 98行，没有读入解释量类型，导致495行读入explainType越界" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
           <mxGeometry x="-1465" y="-1243" width="477" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="ffJpA9B0Xo7B_m2BprDi-1" value="配置设置 x 1000" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="-12846.5" y="-6280.75" width="105" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="ffJpA9B0Xo7B_m2BprDi-2" value="节点序号" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="-12853" y="-6309" width="66" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="ffJpA9B0Xo7B_m2BprDi-3" value="与loop-&amp;gt;timercount比较" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="-12852.5" y="-6256.5" width="144" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="ffJpA9B0Xo7B_m2BprDi-4" value="（相对时间）" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="-12760" y="-6282" width="90" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="ffJpA9B0Xo7B_m2BprDi-5" value="（绝对时间）" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="-12730" y="-6256" width="90" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="ffJpA9B0Xo7B_m2BprDi-6" value="LOOP" style="whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="-13230" y="-2461" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ffJpA9B0Xo7B_m2BprDi-7" value="定时器使用：&lt;div style=&quot;font-size: 18px;&quot;&gt;&lt;br style=&quot;font-size: 18px;&quot;&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=18;" parent="1" vertex="1">
+          <mxGeometry x="-12942.5" y="-2329.86" width="126" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="ffJpA9B0Xo7B_m2BprDi-8" value="void timer_callback(LoopTimer *timer, int err){}" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Helvetica;fontSize=18;fontColor=default;" parent="1" vertex="1">
+          <mxGeometry x="-12788" y="-2263.86" width="387" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="ffJpA9B0Xo7B_m2BprDi-9" value="LoopTimer* timer;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Helvetica;fontSize=18;fontColor=default;" parent="1" vertex="1">
+          <mxGeometry x="-12785.5" y="-2219.86" width="160" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="ffJpA9B0Xo7B_m2BprDi-10" value="LoopTimerStart(&amp;amp;timer, timeout, timer_callback);" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Helvetica;fontSize=18;fontColor=default;" parent="1" vertex="1">
+          <mxGeometry x="-12781" y="-2173.86" width="403" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="ffJpA9B0Xo7B_m2BprDi-13" value="设置超时回调函数" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Helvetica;fontSize=18;fontColor=default;" parent="1" vertex="1">
+          <mxGeometry x="-12957" y="-2263.86" width="162" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="ffJpA9B0Xo7B_m2BprDi-14" value="创建定时器" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Helvetica;fontSize=18;fontColor=default;" parent="1" vertex="1">
+          <mxGeometry x="-12917" y="-2219.86" width="108" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="ffJpA9B0Xo7B_m2BprDi-15" value="启动定时器、加入小根堆" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Helvetica;fontSize=18;fontColor=default;" parent="1" vertex="1">
+          <mxGeometry x="-13004" y="-2173.86" width="216" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="ffJpA9B0Xo7B_m2BprDi-16" value="" style="whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=18;fontColor=default;autosize=1;resizable=0;fillColor=none;gradientColor=none;" parent="1" vertex="1">
+          <mxGeometry x="-11226.25" y="-2205" width="50" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="SnRAkWzncGQiEKLjCB0v-1" value="UDP报头" style="whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="-17324" y="-11335" width="73" height="127" as="geometry" />
+        </mxCell>
+        <mxCell id="SnRAkWzncGQiEKLjCB0v-4" value="" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-17251" y="-11335" width="261" height="127" as="geometry" />
+        </mxCell>
+        <mxCell id="SnRAkWzncGQiEKLjCB0v-5" value="目标连接ID" style="whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="-17251" y="-11334.5" width="83" height="64.5" as="geometry" />
+        </mxCell>
+        <mxCell id="SnRAkWzncGQiEKLjCB0v-6" value="packet number" style="whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="-17251" y="-11269" width="83" height="61" as="geometry" />
+        </mxCell>
+        <mxCell id="SnRAkWzncGQiEKLjCB0v-8" value="packet" style="shape=partialRectangle;whiteSpace=wrap;html=1;top=0;bottom=0;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="-17251" y="-11367" width="261" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="SnRAkWzncGQiEKLjCB0v-9" value="frame" style="whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="-17165" y="-11311" width="69" height="82" as="geometry" />
+        </mxCell>
+        <mxCell id="SnRAkWzncGQiEKLjCB0v-10" value="" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-17068" y="-11312.5" width="69" height="90.5" as="geometry" />
+        </mxCell>
+        <mxCell id="SnRAkWzncGQiEKLjCB0v-11" value="streamID" style="whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="-17068" y="-11312.5" width="70" height="31.5" as="geometry" />
+        </mxCell>
+        <mxCell id="SnRAkWzncGQiEKLjCB0v-12" value="offest" style="whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="-17069" y="-11281.75" width="70" height="31.5" as="geometry" />
+        </mxCell>
+        <mxCell id="SnRAkWzncGQiEKLjCB0v-13" value="data" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="-17053.5" y="-11250.25" width="41" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="SnRAkWzncGQiEKLjCB0v-14" value="QUIC" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="-17194" y="-11195.5" width="48" height="26" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
