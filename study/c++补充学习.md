@@ -568,6 +568,125 @@ auto myFunction(T arg1, T arg2) -> decltype(arg1 + arg2) {
 
 ，`auto` 关键字用于表示函数的返回类型将由后面的表达式推导得出，而 `decltype` 关键字用于获取表达式的类型。因此，`decltype(arg1 + arg2)` 将会推导出函数的返回类型，而不是显式地指定返回类型
 
+## 2 判断模板具体类型
+
+在C++中，模板（`template`）允许你编写与类型无关的代码，但有时候你可能需要在模板内部获取模板参数的具体类型 `T`，以便对该类型执行某些操作或进行类型推导。C++提供了一些方法和工具来实现这一目的。
+
+### 方法1: 使用`typeid`操作符
+
+如果你只是想在运行时获取`T`的类型信息，可以使用`typeid`操作符，它返回一个`std::type_info`对象。你可以将其与`type_info::name()`结合使用，来输出类型名称。
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <typeinfo>
+
+template <typename T>
+void printType(const std::vector<T>& vec) {
+    std::cout << "Type of T is: " << typeid(T).name() << std::endl;
+}
+
+int main() {
+    std::vector<int> vec;
+    printType(vec); // 输出 "Type of T is: i" (i 表示 int 类型)
+    return 0;
+}
+```
+
+### 方法2: 使用`std::is_same`进行类型比较
+
+如果你想在编译时进行类型判断，可以使用`std::is_same`进行类型比较，以此判断`T`是否为特定类型。
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <type_traits>
+
+template <typename T>
+void checkType(const std::vector<T>& vec) {
+    if (std::is_same<T, int>::value) {
+        std::cout << "T is int" << std::endl;
+    } else if (std::is_same<T, double>::value) {
+        std::cout << "T is double" << std::endl;
+    } else {
+        std::cout << "T is another type" << std::endl;
+    }
+}
+
+int main() {
+    std::vector<int> vec1;
+    checkType(vec1); // 输出 "T is int"
+
+    std::vector<double> vec2;
+    checkType(vec2); // 输出 "T is double"
+
+    std::vector<std::string> vec3;
+    checkType(vec3); // 输出 "T is another type"
+    return 0;
+}
+```
+
+### 方法3: 使用`decltype`和`auto`
+
+`decltype`和`auto`都是在C++11引入的特性，允许你在编译时推导类型。如果你在模板函数中需要捕获传入的模板参数类型，可以结合`decltype`来获得`T`的类型。
+
+```cpp
+#include <iostream>
+#include <vector>
+
+template <typename T>
+void printElementType(const std::vector<T>& vec) {
+    auto firstElement = vec[0]; // 使用 auto 自动推导类型
+    std::cout << "Type of T is: " << typeid(decltype(firstElement)).name() << std::endl;
+}
+
+int main() {
+    std::vector<int> vec = {1, 2, 3};
+    printElementType(vec); // 输出 "Type of T is: i" (i 表示 int 类型)
+
+    std::vector<double> vec2 = {1.0, 2.0, 3.0};
+    printElementType(vec2); // 输出 "Type of T is: d" (d 表示 double 类型)
+
+    return 0;
+}
+```
+
+### 方法4: 使用模板特化
+
+如果你需要为特定类型提供特殊的处理逻辑，可以使用模板特化来区分不同类型的处理方式。
+
+```cpp
+#include <iostream>
+#include <vector>
+
+template <typename T>
+void handleVector(const std::vector<T>& vec) {
+    std::cout << "Generic handleVector called" << std::endl;
+}
+
+template <>
+void handleVector<int>(const std::vector<int>& vec) {
+    std::cout << "Specialized handleVector for int called" << std::endl;
+}
+
+int main() {
+    std::vector<int> vec1 = {1, 2, 3};
+    handleVector(vec1); // 输出 "Specialized handleVector for int called"
+
+    std::vector<double> vec2 = {1.0, 2.0, 3.0};
+    handleVector(vec2); // 输出 "Generic handleVector called"
+
+    return 0;
+}
+```
+
+
+
+- 使用 `typeid(T).name()` 可以在运行时输出类型的名称（虽然这通常是平台相关的并且未必是易读的）。
+- 使用 `std::is_same<T, Type>::value` 可以在编译时判断类型是否相同。
+- 使用 `decltype` 和 `auto` 可以让编译器推导类型。
+- 使用模板特化可以对不同类型进行不同的处理。
+
 
 
 # 六 Cmake
