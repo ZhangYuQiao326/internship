@@ -579,10 +579,12 @@ setCentralWidget(edit);
 QComboBox* comb = new QComboBox;
 // 获取当前的索引
 comb -> currentIndex();
+// 设置当前的索引
+comb -> setCurrentIndex(1);
 // 填入选项
 comb->addItems({ QString::fromLocal8Bit("占用"), QString::fromLocal8Bit("空闲") });
 
-// 插入单元格内
+// combox插入单元格内
 table->setCellWidget(row, col, box);
 ```
 

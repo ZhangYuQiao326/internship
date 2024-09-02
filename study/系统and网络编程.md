@@ -3835,7 +3835,7 @@ int main(int argc, char* argv[])
     setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, (char *)&on, sizeof(on));
     setsockopt(listenfd, SOL_SOCKET, SO_REUSEPORT, (char *)&on, sizeof(on));
 
-    //创建epollfd
+    //创建epollfd红黑树根节点
     int epollfd = epoll_create(1);
     if (epollfd == -1)
     {
@@ -3848,7 +3848,7 @@ int main(int argc, char* argv[])
     listen_fd_event.events = POLLIN;
     listen_fd_event.data.fd = listenfd;
 
-    //将侦听socket绑定到epollfd上去
+    //将侦听socket绑定到epollfd监听树上去，作为根节点（listenfd）
     if(epoll_ctl(epollfd, EPOLL_CTL_ADD, listenfd, &listen_fd_event) == -1)
     {
         std::cout << "epoll_ctl error." << std::endl;
@@ -3876,12 +3876,13 @@ int main(int argc, char* argv[])
             continue;
         }
 
+        // 读取数组内的事件，进行处理
         for (size_t i = 0; i < n; ++i)
         {
             // 事件可读
             if (epoll_events[i].events & POLLIN)
             {
-                // 创建新连接
+                // 创建新连接，判断该事件的socket是否是listenfd
                 if (epoll_events[i].data.fd == listenfd)
                 {
                     //侦听socket，接受新连接
@@ -3918,7 +3919,7 @@ int main(int argc, char* argv[])
                 }
                 else 
                 {
-                    //普通clientfd,收取数据
+                    //普通读写clientfd,收取数据（红黑树其他的节点有信息需求）
                     char buf[64] = { 0 };
                     int m = recv(epoll_events[i].data.fd, buf, 64, 0);
                     if (m == 0)
@@ -4881,11 +4882,12 @@ closesocket(sock);
 WSACleanup();
 return 0;
 ```
-}
+
 
 # 17 Window下udp协议
 
 ``` cpp
+// server
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <iostream>
@@ -4915,7 +4917,7 @@ int main() {
 
     // 配置服务器地址结构
     serverAddr.sin_family = AF_INET;
-    serverAddr.sin_addr.s_addr = INADDR_ANY;  // 监听服务器上所有地址
+    serverAddr.sin_addr.s_addr = INADDR_ANY;  // 监听服务器上所有地址 0.0.0.0
     serverAddr.sin_port = htons(8888);
 
     // 绑定套接字
