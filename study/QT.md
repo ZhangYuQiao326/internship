@@ -584,8 +584,15 @@ comb -> setCurrentIndex(1);
 // 填入选项
 comb->addItems({ QString::fromLocal8Bit("占用"), QString::fromLocal8Bit("空闲") });
 
+// 遍历数组插入选项
+std::vector<QString> items = {"Option 1", "Option 2", "Option 3"};
+for (const auto& item : items) {
+    comboBox->addItem(item);
+}
 // combox插入单元格内
 table->setCellWidget(row, col, box);
+
+
 ```
 
 ### 5.2 tableWidget
@@ -1020,7 +1027,7 @@ void initPerTable(QTableWidget *table)
 }
 ```
 
-##### 2 填充所有数据
+##### 2 一次写入所有数据
 
 ```cpp
 void CBIRBCEmulatorForm::loadPerTableWithData(QTableWidget* table, std::vector<SKglConfig>vec)
@@ -1044,9 +1051,10 @@ void CBIRBCEmulatorForm::loadPerTableWithData(QTableWidget* table, std::vector<S
 }
 ```
 
-##### 3 动态填充末尾一行
+##### 3 动态末尾追加写入
 
 ```cpp
+// 添加一行
 static void addOneRowInTable(QTableWidget *table, QStringList vals) 
 {
 	int count = table->rowCount();
@@ -1060,6 +1068,23 @@ static void addOneRowInTable(QTableWidget *table, QStringList vals)
 
 	}
 }
+// 添加多行
+void addRowsAndSetValues(int n) {
+    int rowCount = tableWidget->rowCount();  // 获取当前行数
+
+    // 添加n行
+    for (int i = 0; i < n; ++i) {
+        tableWidget->insertRow(rowCount + i);  // 在末尾添加新行
+    }
+
+    // 赋值给新添加的行
+    for (int i = rowCount; i < rowCount + n; ++i) {
+        for (int j = 0; j < tableWidget->columnCount(); ++j) {
+            tableWidget->setItem(i, j, new QTableWidgetItem(QString("New Item %1,%2").arg(i + 1).arg(j + 1)));
+        }
+    }
+}
+
 void VOBCEmulatorForm::loadData()
 {
 	QTableWidget* table = ui->tableWidget_ztl;
