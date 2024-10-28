@@ -761,55 +761,88 @@ item->setData(Qt::ToolTipRole, "This is a tooltip"); // 设置工具提示
 | `QComboBox *comboBox = qobject_cast<QComboBox *>(table.cellWidget(row, col));` | 获取单元格内的combobox |
 
 ```cpp
-// 必须先创建出单元格/行后，才能插入conbox
-// 在表格的第二列添加QComboBox来选择状态
-for (int row = 0; row < table.rowCount(); ++row) {
-    QComboBox *comboBox = new QComboBox();
-    comboBox->addItems({"State 0", "State 1", "State 2", "State 3"}); // 4种状态
-    table.setCellWidget(row, 1, comboBox);
-}
+#include <QApplication>
+#include <QTableWidget>
+#include <QComboBox>
+#include <QVBoxLayout>
+#include <QHeaderView>
 
-layout.addWidget(&table);
+class ComboBoxTable : public QWidget {
+    Q_OBJECT
+public:
+    ComboBoxTable(QWidget *parent = nullptr) : QWidget(parent) {
+        QVBoxLayout *layout = new QVBoxLayout(this);
 
-// 在表格下添加一个按钮，用于提交选择
-QPushButton *submitButton = new QPushButton("Submit");
-layout.addWidget(submitButton);
+        // 创建表格，6行2列
+        tableWidget = new QTableWidget(6, 2, this);
+        tableWidget->setHorizontalHeaderLabels(QStringList() << "Label" << "ComboBox");
+        tableWidget->horizontalHeader()->setStretchLastSection(true);
 
-// 当点击提交按钮时，读取每一行的状态
-QObject::connect(submitButton, &QPushButton::clicked, [&]() {
-    uint8_t packedData = 0;
-    for (int row = 0; row < table.rowCount(); ++row) {
-        // 将单元格转化为combobox控件
-        QComboBox *comboBox = qobject_cast<QComboBox *>(table.cellWidget(row, 1));
+        // 插入第1种ComboBox到前两行
+        for (int i = 0; i < 2; ++i) {
+            QComboBox *comboBox1 = new QComboBox(this);
+            comboBox1->addItems({"Option A1", "Option A2", "Option A3"});
+            connect(comboBox1, QOverload<int>::of(&QComboBox::currentIndexChanged),
+                    this, &ComboBoxTable::onComboBoxChanged);
+            tableWidget->setCellWidget(i, 1, comboBox1);
+        }
+
+        // 插入第2种ComboBox到中两行
+        for (int i = 2; i < 4; ++i) {
+            QComboBox *comboBox2 = new QComboBox(this);
+            comboBox2->addItems({"Option B1", "Option B2", "Option B3"});
+            connect(comboBox2, QOverload<int>::of(&QComboBox::currentIndexChanged),
+                    this, &ComboBoxTable::onComboBoxChanged);
+            tableWidget->setCellWidget(i, 1, comboBox2);
+        }
+
+        // 插入第3种ComboBox到后两行
+        for (int i = 4; i < 6; ++i) {
+            QComboBox *comboBox3 = new QComboBox(this);
+            comboBox3->addItems({"Option C1", "Option C2", "Option C3"});
+            connect(comboBox3, QOverload<int>::of(&QComboBox::currentIndexChanged),
+                    this, &ComboBoxTable::onComboBoxChanged);
+            tableWidget->setCellWidget(i, 1, comboBox3);
+        }
+
+        layout->addWidget(tableWidget);
+        setLayout(layout);
+    }
+
+private slots:
+    void onComboBoxChanged(int index) {
+        // 获取发送信号的ComboBox
+        QComboBox *comboBox = qobject_cast<QComboBox*>(sender());
         if (comboBox) {
-            int stateIndex = comboBox->currentIndex(); // 获取选中的状态索引
-            uint8_t stateBits = packState(stateIndex);
-            packedData |= (stateBits << (row * 2)); // 假设每行占用2个比特位
+            // 获取ComboBox所在的行
+            int row = -1;
+            for (int i = 0; i < tableWidget->rowCount(); ++i) {
+                if (tableWidget->cellWidget(i, 1) == comboBox) {
+                    row = i;
+                    break;
+                }
+            }
+
+            if (row != -1) {
+                QString selectedItem = comboBox->currentText();
+                qDebug() << "Row" << row << "ComboBox changed to" << selectedItem;
+            }
         }
     }
 
+private:
+    QTableWidget *tableWidget;
+};
 
-```
-
-```cpp
-// 指定单元格添加下拉框
-comboBox= new QComboBox();
-comboBox->addItems({ "IL-RM", "ITC-CM", "ITC-AM", "CBTC-CM", "CBTC-AM"});
-table->setCellWidget(count, 3, comboBox);
-// 添加信号机制
-connect(comboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &VOBCEmulatorForm::onComboBoxIndexChanged);
-```
-
-```cpp
-// 修改下拉框执行操作
-void VOBCEmulatorForm::onComboBoxIndexChanged(int index)
-{
-	QComboBox* comboBox = qobject_cast<QComboBox*>(sender());
-	if (comboBox == comboBox_zgjsms)
-	{
-		m_map[curTrain].zgjsms = m_explains[1][index];
-	}
+int main(int argc, char *argv[]) {
+    QApplication app(argc, argv);
+    ComboBoxTable window;
+    window.show();
+    return app.exec();
 }
+
+#include "main.moc"
+
 ```
 
 
@@ -1592,6 +1625,77 @@ tabFont.setPointSize(12);
   ```
 
 这些接口在开发`Qt`应用程序时非常有用，允许你根据需要对复选框的行为和外观进行细粒度的控制。
+
+### 5.7 RadioButton
+
+```cpp
+#include <QApplication>
+#include <QWidget>
+#include <QRadioButton>
+
+class MyWindow : public QWidget {
+public:
+    MyWindow() {
+        // 创建单选按钮
+        QRadioButton *radioButton1 = new QRadioButton("选项 1");
+        QRadioButton *radioButton2 = new QRadioButton("选项 2");
+        QRadioButton *radioButton3 = new QRadioButton("选项 3");
+
+        // 创建确认按钮
+        QPushButton *button = new QPushButton("确认选择");
+        
+        // 设置默认勾选第一个单选按钮
+        radioButton1->setChecked(true);
+		
+        
+};
+
+```
+
+```cpp
+// 单选按钮分组
+#include <QRadioButton>
+#include <QButtonGroup>
+
+class MyWindow : public QWidget {
+public:
+    MyWindow() {
+        // 创建单选按钮
+        QRadioButton *radioButton1 = new QRadioButton("选项 1");
+        QRadioButton *radioButton2 = new QRadioButton("选项 2");
+        QRadioButton *radioButton3 = new QRadioButton("选项 3");
+
+        // 创建确认按钮
+        QPushButton *button = new QPushButton("确认选择");
+        
+        // 设置默认勾选第一个单选按钮
+        radioButton1->setChecked(true);
+
+        // 分组。每组可以单选一个
+        QButtonGroup *group1 = new QButtonGroup(this);
+        group1->addButton(radioButton1);
+        group1->addButton(radioButton2);
+
+        QButtonGroup *group2 = new QButtonGroup(this);
+        group2->addButton(radioButton3);
+        group2->addButton(radioButton4);
+        
+        // 绑定槽函数
+        // qt6绑定方式
+		connect(group2, &QButtonGroup::buttonClicked, this, &QJKEmulatorForm::onGroup2ButtonClicked);
+        
+        // qt5 绑定方式
+		connect(group1, SIGNAL(buttonClicked(QAbstractButton*)), this, SLOT(onGroup1ButtonClicked(QAbstractButton*)));
+        
+private:
+        void onGroup1ButtonClicked(QAbstractButton *button) {
+        	QMessageBox::information(this, "组 1 选择", "您选择了: " + button->text());
+    	}
+
+};
+```
+
+
 
 ## 6 layout
 
@@ -3222,15 +3326,161 @@ other.show()
 
 
 
-## 12 网络编程
+## 12 通信
+
+### 1. 串口
+
+```cmake
+cmake_minimum_required(VERSION 3.14)
+
+# 设置项目名称和 Qt 版本
+project(SerialPortExample LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# 查找 Qt 包，包括 SerialPort 模块
+find_package(Qt6 REQUIRED COMPONENTS Core SerialPort)
+
+# 如果使用的是 Qt5，请用以下方式：
+# find_package(Qt5 REQUIRED COMPONENTS Core SerialPort)
+
+# 添加可执行文件
+add_executable(SerialPortExample main.cpp)
+
+# 链接 Qt 库
+target_link_libraries(SerialPortExample PRIVATE Qt6::Core Qt6::SerialPort)
+
+# 如果使用的是 Qt5，请用以下方式：
+# target_link_libraries(SerialPortExample PRIVATE Qt5::Core Qt5::SerialPort)
 
 ```
-Header:
-#include <QTcpServer> 
-qmake:
-QT += network
+
+```cpp
+#include <QSerialPort>
+#include <QDebug>
+// ======1 创建
+QSerialPort serialPort;
+
+// ======2 设置属性
+serialPort.setPortName("COM1");  // 设置串口名称
+serialPort.setBaudRate(QSerialPort::Baud9600);  // 设置波特率
+serialPort.setDataBits(QSerialPort::Data8);  // 设置数据位
+serialPort.setParity(QSerialPort::NoParity);  // 设置无校验位
+serialPort.setStopBits(QSerialPort::OneStop);  // 设置停止位
+serialPort.setFlowControl(QSerialPort::NoFlowControl);  // 设置无流控制
+
+// ======3 连接异步读，收到数据立刻调用槽函数处理
+connect(m_serialPort, &QSerialPort::readyRead, this, &ZndsNCEmulatorForm::handleReadyRead);
+
+// ======4 打开串口
+if (serialPort.open(QIODevice::ReadWrite)) {
+    
+    // 方式1：发送的字节数组
+    QByteArray dataToSend = "Hello, SerialPort!";
+    // 方式2：发送vector<uint8_t>
+    QByteArray dataToSend(reinterpret_cast<const char*>(m_protocolPacket.data()), m_protocolPacket.size());
+    
+    // ======= 5发送数据
+    qint64 bytesWritten = serialPort.write(dataToSend);
+    
+    if (bytesWritten == -1) {
+        qDebug() << "Failed to write data to serial port";
+    } else {
+        qDebug() << "Sent" << bytesWritten << "bytes";
+    }
+} else {
+    qDebug() << "Failed to open serial port:" << serialPort.errorString();
+}
+
+// ========6 读取数据--槽函数
+void ZndsNCEmulatorForm::handleReadyRead()
+{
+	QByteArray data = m_serialPort->readAll(); 
+    // 转为vector<uint8_t> 存储
+	std::vector<uint8_t> dataVector(reinterpret_cast<const uint8_t*>(data.constData()),
+		reinterpret_cast<const uint8_t*>(data.constData()) + data.size());
+	
+	// 处理数据 ...
+}
+// ========7关闭串口
+serialPort.close();
 
 ```
+
+### 2. UDP
+
+```cmake
+# 查找 Qt 包，包括 网络 模块
+find_package(Qt5 COMPONENTS Widgets Network REQUIRED)
+
+# 链接 Qt 库
+target_link_libraries(SerialPortExample PRIVATE Qt5::Widgets Qt5::Network)
+```
+
+```cpp
+#include <QUdpSocket>
+#include <QHostAddress>
+#include <QCoreApplication>
+#include <QDebug>
+
+class MyUdpApp : public QObject {
+    Q_OBJECT
+
+public:
+    MyUdpApp() {
+        udpSocket = new QUdpSocket(this);
+        
+        // 绑定到本地端口
+        udpSocket->bind(QHostAddress::Any, port);
+        
+        // 连接信号
+        connect(udpSocket, &QUdpSocket::readyRead, this, &MyUdpApp::onReadyRead);
+    }
+
+private slots:
+    // 异步读
+    void onReadyRead();
+    void sendDatagram(const QByteArray &data, const QHostAddress &address, quint16 port);
+
+private:
+    QUdpSocket *udpSocket;
+    const quint16 port = 1234; // 使用你需要的端口
+};
+// 读
+void MyUdpApp::onReadyRead() {
+    while (udpSocket->hasPendingDatagrams()) {
+        QByteArray datagram;
+        datagram.resize(udpSocket->pendingDatagramSize());
+        QHostAddress sender;
+        quint16 senderPort;
+
+        udpSocket->readDatagram(datagram.data(), datagram.size(), &sender, &senderPort);
+        qDebug() << "Received:" << datagram << "from" << sender.toString() << ":" << senderPort;
+    }
+}
+// 发送
+void MyUdpApp::sendDatagram(const QByteArray &data, const QHostAddress &address, quint16 port) {
+    udpSocket->writeDatagram(data, address, port);
+}
+
+```
+
+```cpp
+int main(int argc, char *argv[]) {
+    QCoreApplication a(argc, argv);
+
+    MyUdpApp udpApp;
+
+    // 发送数据示例
+    QByteArray data("Hello, UDP!");
+    udpApp.sendDatagram(data, QHostAddress::Broadcast, udpApp.port);
+
+    return a.exec();
+}
+```
+
+
 
 ## 13 时间类
 
@@ -3387,6 +3637,14 @@ int main()
 <img src="https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202405151619075.png" alt="image-20240515161933727" style="zoom:50%;" />
 
 ![image-20240515164012980](https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures/img/202405151640041.png)
+
+## 下载qt插件2
+
+--该插件用于右键创建qt文件
+
+**qt vs cmake tools**
+
+![image-20241008113436191](C:\Users\zhang\AppData\Roaming\Typora\typora-user-images\image-20241008113436191.png)
 
 # 错误
 
