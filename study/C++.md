@@ -8648,164 +8648,6 @@ int (*fun2)(int,int);
 
 
 
-## 8.7 cast类型转换
-
-**不用加std**
-
-| 类型              | 使用                                         |
-| ----------------- | -------------------------------------------- |
-| `static_cast`     | 相同类型转换，数值转换、继承类、指针转换     |
-| `dynamic_cast`    | 子类指针转为父类指针                         |
-| `reiterpret_cast` | 强转，常用于指针之间转换、指针与数值之间转换 |
-| `const_cast`      | 取出指向对象的指针或引用的const属性          |
-
-
-
-### 8.7.1 static_cast
-
-* 隐式转换（相似类型转换）
-
-它可以将一种类型的值转换为另一种类型，前提是这两种类型之间存在明确定义的转换规则。 `static_cast` 是一种相对安全的类型转换，可以进行常见的类型转换，如数值类型之间的转换、指针类型之间的转换以及父子类之间的指针或引用转换。
-
-语法如下：`static_cast<目标类型>(表达式)`
-
-1、数值之间转换
-
-```cpp
-int x = 10;
-double y = static_cast<double>(x);
-
-```
-
-2、指针类型之间转换
-
-```cpp
-int* ptr = new int(5);
-void* voidPtr = static_cast<void*>(ptr);
-
-```
-
-3、父类指针指向子类对象
-
-```cpp
-class par {};
-class son : public par {};
-son * son = new son();
-par* ptr = static_cast<son*>(son);
-```
-
-4、bool类型转换
-
-如果值为零或空指针，则转换结果为 `false`。
-
-如果值不为零或非空指针，则转换结果为 `true`
-
-```cpp
-int num = 10;
-bool result = static_cast<bool>(num); true
-
-int *a = NULL;
-bool result = static_cast<bool>(a); false
-```
-
-### 8.7.2 reinterpret_cast
-
-* 强制类型转换（不相近类型）
-* 常用于不同类型指针或引用的转换、指针与整形之间的转换
-
-```cpp
-int *p = nullptr;
-int i =1;
-// p = (int *)i; c语言中强制类型转换
-p = reinterpret_cast<int*> i;
-```
-
-
-
-### 8.7.3 dynamic_cast
-
-`dynamic_cast` 主要用于多态类型的转换
-
-1. 在多态类型中进行安全的向下转型：当基类指针或引用指向派生类对象时，可以使用 `dynamic_cast` 将其转换为派生类指针或引用。如果转换是有效的，即指针或引用指向的对象是目标类型的一个实例，那么转换将成功，==返回指向派生类的指针或引用==；否则，如果转换无效，即指针或引用指向的对象不是目标类型的实例，转换将==返回nullptr（==对于指针转换）或抛出 `std::bad_cast` 异常（对于引用转换）。
-2. 进行类型的动态检查：可以使用 `dynamic_cast` 进行类型的动态检查，判断一个对象是否属于特定的类型。如果转换成功，即对象是目标类型的一个实例，转换将返回非空指针；否则，转换将返回空指针。
-
-需要注意的是，`dynamic_cast` 只能用于具有虚函数的类类型之间的转换，并且转换涉及的类型必须存在继承关系。
-
-1. 父类指针 接收 子类对象赋值， 天然可通过，发生切片
-2. 子类指针 接收 父类对象赋值，分情况，若父类对象的指针实际指向父类对象，则失败、若实际指向子类对象，则成功
-3. dynamic_cast用来判断，父类指针指向的具体对象，失败则nullptr
-
-4. 使用dynamic_cast父类必须要有虚函数, 原理是通过虚表来判断具体指向哪一个对象
-
-```cpp
-class A {
-public:
-	virtual void fun() {};  //1 必须要有虚函数，即构成多态
-protected:
-	int _x;
-};
-
-class B : public A {
-private:
-	int _y;
-};
-int main() {
-	A a1;
-	B b1 ;
-	A* pa = &a1;  // 父类指针指向父类对象
-	// 切片
-	A* pb = &b1; // 父类对象指向子类对象
-
-
-	// B* pb2 = &a2; 报错：子类指针不能接收父类对象
-	B* pa2 = dynamic_cast<B*> (pb);  // 父类必须为多态，即必须包含虚函数
-	if (pa2 != nullptr) cout << "父类指针指向子类对象" << endl;
-	else cout << "父类对象指向父类对象" << endl;
-
-	return 0;
-}
-```
-
-
-
-<img src="https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures@main/img/image-20240304162243228.png" alt="image-20240304162243228" style="zoom:67%;" />
-
-
-
-### 8.7.4 const_cast
-
-* 移除指向对象的指针或引用的const属性，不能移除对象本身的const属性，会出现未定义的错误
-
-```cpp
-const int i = 1;
-int p = const_cast<int>(i); // 错误
-
-int j = 1;
-const int* j1 = &j;
-int *p = const_cast<int*>(j);
-const int& j2 = j;
-int &p = const_cast<int&>(j2);
-```
-
-【考点】
-
-```cpp
-const int i = 1;
-int *p = const_cast<int*>(&i);
-*p =2;
-cout << *p <<endl; // 输出2
-cout << i << endl; // 输出1， 但是此时内存中i的值已经被修改为2，但是输出的i是从寄存器中获取
-// 设置volatile const int i = 1; 设置关键字防止编译器对const对象存取做优化，此时 cout <<i 为2
-```
-
-* volatile 用于防止编译器优化，确保每次访问变量时直接从内存读取，常用于多线程编程和访问硬件寄存器。
-
-```cpp
-volatile int a = 10;
-
-int &b = const_cast<int&>(a); // 将a转化为引用，再取出volatile属性
-```
-
 
 
 ## 8.8 static
@@ -9159,6 +9001,166 @@ memset(a,1, sizeof(int)*10);   // 发生错误  初始化为 000000001  00000001
 
 [c++11新特性pdf](E:\typora索引文件\c++\C++进阶课件\Lesson06--C++11.pdf)
 
+## 9.0 cast类型转换
+
+**不用加std**
+
+| 类型              | 使用                                                         |
+| ----------------- | ------------------------------------------------------------ |
+| `static_cast`     | 相同类型转换，数值转换、指针转换、父类指针指向子类（合法）   |
+| `dynamic_cast`    | 必须有虚函数，子类指针指向父类（非法），根据==虚函数表==判断，若是子类的虚函数表，则转换成功，否则失败 |
+| `reiterpret_cast` | 强转，常用于指针之间转换、指针与数值之间转换                 |
+| `const_cast`      | 去除指向对象的指针或引用的const、valatile属性                |
+
+
+
+### 8.7.1 static_cast
+
+* 隐式转换（相似类型转换）
+
+它可以将一种类型的值转换为另一种类型，前提是这两种类型之间存在明确定义的转换规则。 `static_cast` 是一种相对安全的类型转换，可以进行常见的类型转换，如数值类型之间的转换、指针类型之间的转换以及父子类之间的指针或引用转换。
+
+语法如下：`static_cast<目标类型>(表达式)`
+
+1、数值之间转换
+
+```cpp
+int x = 10;
+double y = static_cast<double>(x);
+
+```
+
+2、指针类型之间转换
+
+```cpp
+int* ptr = new int(5);
+void* voidPtr = static_cast<void*>(ptr);
+
+```
+
+3、父类指针指向子类对象
+
+```cpp
+class par {};
+class son : public par {};
+son * son = new son();
+par* ptr = static_cast<son*>(son);
+```
+
+4、bool类型转换
+
+如果值为零或空指针，则转换结果为 `false`。
+
+如果值不为零或非空指针，则转换结果为 `true`
+
+```cpp
+int num = 10;
+bool result = static_cast<bool>(num); true
+
+int *a = NULL;
+bool result = static_cast<bool>(a); false
+```
+
+### 8.7.2 reinterpret_cast
+
+* 强制类型转换（不相近类型）
+* 常用于不同类型指针或引用的转换、指针与整形之间的转换
+
+```cpp
+int *p = nullptr;
+int i =1;
+// p = (int *)i; c语言中强制类型转换
+p = reinterpret_cast<int*> i;
+```
+
+
+
+### 8.7.3 dynamic_cast
+
+`dynamic_cast` 主要用于多态类型的转换
+
+1. 在多态类型中进行安全的向下转型：当基类指针或引用指向派生类对象时，可以使用 `dynamic_cast` 将其转换为派生类指针或引用。如果转换是有效的，即指针或引用指向的对象是目标类型的一个实例，那么转换将成功，==返回指向派生类的指针或引用==；否则，如果转换无效，即指针或引用指向的对象不是目标类型的实例，转换将==返回nullptr（==对于指针转换）或抛出 `std::bad_cast` 异常（对于引用转换）。
+2. 进行类型的动态检查：可以使用 `dynamic_cast` 进行类型的动态检查，判断一个对象是否属于特定的类型。如果转换成功，即对象是目标类型的一个实例，转换将返回非空指针；否则，转换将返回空指针。
+
+需要注意的是，`dynamic_cast` 只能用于具有虚函数的类类型之间的转换，并且转换涉及的类型必须存在继承关系。
+
+1. 父类指针 接收 子类对象赋值， 天然可通过，发生切片
+2. 子类指针 接收 父类对象赋值，分情况，若父类对象的指针实际指向父类对象，则失败、若实际指向子类对象，则成功
+3. dynamic_cast用来判断，父类指针指向的具体对象，失败则nullptr
+
+4. 使用dynamic_cast父类必须要有==虚函数==, 原理是通过虚表来判断具体指向哪一个对象
+
+```cpp
+class A {
+public:
+	virtual void fun() {};  //1 必须要有虚函数，即构成多态
+protected:
+	int _x;
+};
+
+class B : public A {
+private:
+	int _y;
+};
+int main() {
+	A a1;
+	B b1 ;
+	A* pa = &a1;  // 父类指针指向父类对象
+	// 切片
+	A* pb = &b1; // 父类对象指向子类对象
+
+
+	// B* pb2 = &a2; 报错：子类指针不能接收父类对象
+	B* pa2 = dynamic_cast<B*> (pb);  // 父类必须为多态，即必须包含虚函数
+	if (pa2 != nullptr) cout << "父类指针指向子类对象" << endl;
+	else cout << "父类对象指向父类对象" << endl;
+
+	return 0;
+}
+```
+
+
+
+<img src="https://cdn.jsdelivr.net/gh/ZhangYuQiao326/study_nodes_pictures@main/img/image-20240304162243228.png" alt="image-20240304162243228" style="zoom:67%;" />
+
+
+
+### 8.7.4 const_cast
+
+* 移除指向对象的指针或引用的const属性，不能移除对象本身的const属性，会出现未定义的错误
+
+```cpp
+const int i = 1;
+int p = const_cast<int>(i); // 错误
+
+int j = 1;
+const int* j1 = &j;
+int *p = const_cast<int*>(j);
+const int& j2 = j;
+int &p = const_cast<int&>(j2);
+```
+
+【考点】
+
+```cpp
+const int i = 1;
+int *p = const_cast<int*>(&i);
+*p =2;
+cout << *p <<endl; // 输出2
+cout << i << endl; // 输出1， 但是此时内存中i的值已经被修改为2，但是输出的i是从寄存器中获取
+// 设置volatile const int i = 1; 设置关键字防止编译器对const对象存取做优化，此时 cout <<i 为2
+```
+
+* volatile 用于防止编译器优化，确保每次访问变量时直接从内存读取，常用于多线程编程和访问硬件寄存器。
+
+```cpp
+volatile int a = 10;
+
+int &b = const_cast<int&>(a); // 将a转化为引用，再取出volatile属性
+```
+
+
+
 ## 9.1 智能指针
 
 ### 9.1.1 类型
@@ -9481,7 +9483,7 @@ int* ptr = NULL; // 使用 NULL 初始化指针
   内存中有地址，可以修改的值
 
   1. **变量：** 变量是最常见的左值，因为它们具有名称，可以用于存储和修改值。
-     
+    
      ```cpp
      int x = 10; // x 是左值
      int y = 20;
@@ -9495,7 +9497,7 @@ int* ptr = NULL; // 使用 NULL 初始化指针
      ```
 
   3. **引用：** 引用也是左值，因为它们是变量的别名，可以用于修改原始变量的值。
-     
+    
      ```cpp
      int y = 20;
      int& ref = y; // ref 是左值，可以修改 y 的值
@@ -9504,7 +9506,7 @@ int* ptr = NULL; // 使用 NULL 初始化指针
      ```
      
   4. **函数返回的左值：** 如果函数返回的是一个具体的值（而不是临时对象或表达式的结果），那么它是左值。
-     
+    
      ```cpp
      int getValue() {
          return 100;
@@ -9698,7 +9700,7 @@ void push_back(T && val){
 }
 ```
 
-2. * 模板父函数通过万能音乐和完美转发接收参数
+2. * 模板父函数通过万能引用和完美转发接收参数
    * 子函数函数重载 左值引用和右值引用
 
    ```cpp
@@ -10437,26 +10439,6 @@ static Singleton::CGarbo Garbo;
 
 
 
-
-
-
-
-
-
-
-
-
-
-## 工厂模式、建造者模式
-
-工厂模式：注重的不同的产品的构建方式（造不同产品）
-
-建造者模式：注重意见产品的构造细节（造小人）
-
-## 迭代器模式 适配器模式
-
-
-
 # 十一 优化操作
 
 ## 11.0 编译源代码
@@ -10704,8 +10686,6 @@ Sum of arguments: 6
 总之，`sizeof`可以用于获取在编译时已知大小的变量、数组和对象的大小。但是，对于动态分配的内存块，您需要跟踪分配的大小，通常使用`malloc`、`new`或其他分配函数的参数来记录它们的大小。
 
 
-
-## 
 
 
 
@@ -11529,7 +11509,8 @@ public:
 
 * 含有虚函数的类的构成：成员变量、虚函数表指针（vftptr）
 * 子类的vftptr是拷贝基类的vftptr，虚函数表内存放虚函数的地址，以0结尾
-* 子类重写基类的虚函数，即将子类vftptr的虚函数位置修改，没有重写的位置不变
+* 子类不重写基类的虚函数，即将子类vftptr的仍指向父类的虚函数表
+* 重写，创建新的虚函数表，修改子类的虚函数表指针
 
 【sizeof计算】
 
@@ -11539,8 +11520,9 @@ public:
 【注意】
 
 * 一个类的可以有多个虚地址表（==多重继承==）
-* 一个类的所有实例对象==共享==一个虚地址表
+* 每个类（含有虚函数）都有自己的虚函数表，虚函数表内存放的是指向函数的指针
 * 虚地址表（vftptr值）在==编译==阶段生成，在运行时候填写具体的虚函数地址
+* 同一个类的所有对象共享一张虚函数表
 
 【存放位置】
 
@@ -11586,7 +11568,7 @@ class A{
 
 3 【构造函数不能为虚函数】
 
-* 
+* 虚函数的工作机制依赖于虚指针（`vptr`），而虚指针是在对象构造过程中被初始化
 
 4 【析构函数可以是虚函数】
 
@@ -12913,9 +12895,9 @@ int main()
 }
 ```
 
-## 4 面试题
+## 4 扩容机制
 
-> 1 vector是如何增容的？
+> 1 vector是如何增容的？数据在扩容时如何处理，拷贝方式是什么，为什么？
 >
 > 1. vector是一个可动态增长的数组，插入、reserve、resize等操作都会面临增容问题
 > 2. 最常见的情况是，vs下capacity是按1.5倍增长的，g++是按2倍增长的。但是具体增长多少，是按照需求定义的，比如我之前阅读过facebook内部使用的fbvecor，他的容量增加策略是：
@@ -12929,6 +12911,14 @@ int main()
 >
 > * 迭代器失效，我们需要在扩容操作后，返回更新后的迭代器
 > * 浅拷贝问题，在开辟新空间后赋值值，若采用内存处理函数memcpy进行拷贝，若vector存储有指针类型，则会导致浅拷贝，因此我们采用元素赋值的方法，调用元素的operator=进行深拷贝
+>
+> 4. 具体的拷贝策略
+>
+>    对于内置类型int等，`vector` 会使用**内存复制**（`memcpy`），效率快
+>
+>    对于自定义类型，由于浅拷贝问题，采用拷贝构造进行深拷贝
+>
+>    支持移动构造，优先采用移动构造
 
 ```cpp
 size_type computePushBackCapacity() const {
@@ -13256,7 +13246,7 @@ namespace yu {
 }
 ```
 
-## 面试题
+## 3 list和vector的使用场景
 
 >  ==1 vector 和 list 的区别==
 >
@@ -13640,7 +13630,7 @@ public:
 >    mapped_type& operator[] (const key_type& k){
 >        return (*((this->insert(make_pair(k,mapped_type()))).first)).second;
 >    }
->    
+>          
 >    1. map["苹果"] = 2;
 >    2. key不存在，map[key] = val，即先插入<key, T()>, 在修改默认的val
 >    3. key存在，直接修改val
@@ -13671,26 +13661,30 @@ public:
 >               for(auto e : words){
 >                   m[e] ++;
 >               }
->       
+>                   
 >               // kv呼唤，按照val排序
 >               multimap<int,string,greater<int>> mmp;
 >               for(const auto& pair : m){
 >                   mmp.insert(make_pair(pair.second, pair.first));
 >               }
->       
+>                   
 >               auto it = mmp.begin();
 >               vector<string> res;
 >               for(int i = 0; i < k; ++i){
 >                   res.push_back(it->second);
 >                   ++it;
->       
+>                   
 >               }
 >               return res;
 >           }
 >       };
 >       ```
 
+4. map中括号和find查找区别？
 
+   如果使用 `operator[]` 查找一个不存在的键，会自动插入一个具有该键的元素，并且该元素的值会被默认初始化
+
+   如果查找的键不存在，`find()` 不会插入任何元素，它会返回一个指向 `end()` 的迭代器，表示没有找到对应的键。
 
 # --------------------------
 

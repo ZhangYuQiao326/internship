@@ -1,0 +1,41 @@
+<div id="article_content" class="article_content clearfix">
+        <link rel="stylesheet" href="https://csdnimg.cn/release/blogv2/dist/mdeditor/css/editerView/kdoc_html_views-1a98987dfd.css">
+        <link rel="stylesheet" href="https://csdnimg.cn/release/blogv2/dist/mdeditor/css/editerView/ck_htmledit_views-044f2cf1dc.css">
+             
+                <div id="content_views" class="markdown_views prism-atom-one-dark">
+                    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path stroke-linecap="round" d="M5,0 0,2.5 5,5z" id="raphael-marker-block" style="-webkit-tap-highlight-color: rgba(0, 0, 0, 0);"></path>
+                    </svg>
+                    <h2><a name="t0"></a><a id="gitgitHub_0"></a>解决git无法连接gitHub问题</h2> 
+<br> 
+<h4><a name="t1"></a><a id="_4"></a>事情的起因</h4> 
+<p>我在使用git push我的项目时出现下面问题</p> 
+<p>fatal: unable to access ‘https://github.com/xxx.git/’: Recv failure: Connection was reset</p> 
+<p>或者</p> 
+<p>fatal: unable to access ‘https://github.com/xxx.git/’: Failed to connect to github.com port 443 after 21090 ms: Couldn’t connect to server</p> 
+<p>翻译过来就是无法连接到github</p> 
+<h4><a name="t2"></a><a id="_18"></a>分析原因</h4> 
+<ol><li> <p>检查网络</p> <p>无法连接一般是网络不行或者网络不稳定，使用浏览器访问github看看是否正常，如果浏览器无法访问或者加载的不是完整页面使用git可能就出现上面的问题</p> <br> </li><li> <p>检查代理</p> <p>因为github访问比较慢，很多人都使用了代理，我也一样</p> <p>看一下自己是不是开了代理或者开过代理，为什么要讲开过呢？因为有些代理软件会修改系统配置参数一些问题</p> </li></ol> 
+<h4><a name="t3"></a><a id="_34"></a>解决方法</h4> 
+<ol><li> <p>浏览器无法访问github或者访问显示不全</p> <p>换一个好的能访问github的网络或者开代理</p> <br> </li><li> <p>代理问题</p> <p>一般是开了代理能正常访问github但是使用git命令连接不上github</p> <p>给git设置代理可以解决</p> <p>以我为例，开了代理，端口为7890，可以浏览器可以正常访问github，代理的端口是7890</p> <p>查看git配置 git config --global -l</p> <pre data-index="0" class="set-code-show prettyprint"><code class="has-numbering" onclick="mdcp.copyCode(event)" style="position: unset;">&gt; git config --global -l
+user.name=xxxx
+user.email=xxxx
+<div class="hljs-button {2}" data-title="复制"></div></code><ul class="pre-numbering" style=""><li style="color: rgb(153, 153, 153);">1</li><li style="color: rgb(153, 153, 153);">2</li><li style="color: rgb(153, 153, 153);">3</li></ul></pre> <p>可以看到我的git是没设置代理的</p> <p>给git设置代理</p> <p>git config --global http.proxy 127.0.0.1:7890<br> git config --global https.proxy 127.0.0.1:7890</p> <pre data-index="1" class="set-code-show prettyprint"><code class="has-numbering" onclick="mdcp.copyCode(event)" style="position: unset;">&gt; git config --global http.proxy 127.0.0.1:7890
+&gt; git config --global https.proxy 127.0.0.1:7890
+<div class="hljs-button {2}" data-title="复制"></div></code><ul class="pre-numbering" style=""><li style="color: rgb(153, 153, 153);">1</li><li style="color: rgb(153, 153, 153);">2</li></ul></pre> <p>再次查看git配置 git config --global -l</p> <pre data-index="2" class="set-code-show prettyprint"><code class="has-numbering" onclick="mdcp.copyCode(event)" style="position: unset;">&gt; git config --global -l
+user.name=xxx
+user.email=xxx
+http.proxy=127.0.0.1:7890
+https.proxy=127.0.0.1:7890
+<div class="hljs-button {2}" data-title="复制"></div></code><ul class="pre-numbering" style=""><li style="color: rgb(153, 153, 153);">1</li><li style="color: rgb(153, 153, 153);">2</li><li style="color: rgb(153, 153, 153);">3</li><li style="color: rgb(153, 153, 153);">4</li><li style="color: rgb(153, 153, 153);">5</li></ul></pre> <p>使用git pull看看</p> <pre data-index="3" class="set-code-show prettyprint"><code class="has-numbering" onclick="mdcp.copyCode(event)" style="position: unset;">&gt; git pull
+Already up to date.
+<div class="hljs-button {2}" data-title="复制"></div></code><ul class="pre-numbering" style=""><li style="color: rgb(153, 153, 153);">1</li><li style="color: rgb(153, 153, 153);">2</li></ul></pre> <p>正常了<br> <br></p> <p>还有一个问题是没开代理但是git设置了代理也会出现上面问题，解决方法是取消git代理</p> <p>git config --global --unset https.proxy<br> git config --global --unset http.proxy</p> <pre data-index="4" class="set-code-show prettyprint"><code class="has-numbering" onclick="mdcp.copyCode(event)" style="position: unset;">&gt; git config --global --unset http.proxy
+&gt; git config --global --unset https.proxy
+&gt; git config --global -l
+user.name=xxx
+user.email=xxx
+<div class="hljs-button {2}" data-title="复制"></div></code><ul class="pre-numbering" style=""><li style="color: rgb(153, 153, 153);">1</li><li style="color: rgb(153, 153, 153);">2</li><li style="color: rgb(153, 153, 153);">3</li><li style="color: rgb(153, 153, 153);">4</li><li style="color: rgb(153, 153, 153);">5</li></ul></pre> </li></ol>
+                </div><div><div></div></div>
+                <link href="https://csdnimg.cn/release/blogv2/dist/mdeditor/css/editerView/markdown_views-f23dff6052.css" rel="stylesheet">
+                <link href="https://csdnimg.cn/release/blogv2/dist/mdeditor/css/style-c216769e99.css" rel="stylesheet">
+        </div>
