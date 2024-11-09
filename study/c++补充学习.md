@@ -810,13 +810,14 @@ target_link_libraries(MyExecutable PRIVATE MyLibrary)
 target_link_libraries(MyExecutable PUBLIC MyOtherLibrary)
 ```
 
-## 5 查找三方库
+## 5 链接三方库
 
-### 5.1 find_package
+1. `include_directories("../include")` 导入头文件目录
 
-`find_package`用查找第三方库，比如Boost、Qt等，需要先通过`find_package`找到它们。然后通过`target_link_libraries`将这些库链接到目标库或可执行文件中。
+2. `find_package`用查找第三方库的lib文件，用于cmake编译。比如Boost、Qt、opencv等
 
-示例：
+2. 然后通过`target_link_libraries`将dll动态库链接到目标库或可执行文件中
+
 ```cmake
 # 查找并加载 Qt5 的 Widgets 模块
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
@@ -825,14 +826,22 @@ find_package(Qt5 COMPONENTS Widgets REQUIRED)
 target_link_libraries(my_target Qt5::Widgets)
 ```
 
-### 5.2 查找路径
+```cmake
+# lib
+set(CMAKE_PREFIX_PATH "D:/self/GraduationProject/libs/opencv/build/x64/vc16/lib")
+find_package(OpenCV REQUIRED)
+# dll
+target_link_libraries(my_target ${OpenCV_LIBS})
+```
 
-`CMAKE_PREFIX_PATH`是一个CMake变量，用于指定在搜索依赖包时要搜索的路径。这个变量通常用于告诉CMake在哪里可以找到所需的依赖包。
+
+
+`CMAKE_PREFIX_PATH`是一个CMake变量，用于指定在`find_package`搜索依赖包时要搜索的路径。这个变量通常用于告诉CMake在哪里可以找到所需的依赖包。
 
 具体来说，当你使用`find_package()`命令来查找某个依赖包时，CMake会按照以下顺序搜索依赖包：
 
 1. 首先，它会搜索系统默认的安装路径。
-2. 然后，它会搜索`CMAKE_PREFIX_PATH`变量中指定的路径。
+2. 然后，它会搜索`CMAKE_PREFIX_PATH`变量中指定的路径----注意指定到lib库。
 3. 最后，它会搜索其他默认路径。
 
 因此，通过设置`CMAKE_PREFIX_PATH`变量，你可以告诉CMake在特定的路径下搜索依赖包。
@@ -863,6 +872,17 @@ set(CMAKE_PREFIX_PATH "/path/to/Qt")
 | 时间戳         | `TIMESTAMP`      |
 | 转换为指定路径 | `RELATIVE_PATH`  |
 
+> 获取当前目录下的所有cpp h文件
+
+```cmake
+ file(GLOB_RECURSE SRC_FILES *.cpp *.c)
+
+ add_executable(${PROJECT_NAME}
+     ${SRC_FILES}
+
+ )
+```
+
 > 创建一个或多个目录：
 
 ```cmake
@@ -875,6 +895,8 @@ file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/new_directory)
 # 创建多个目录
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/dir1 ${CMAKE_BINARY_DIR}/dir2)
 ```
+
+
 
 > 将文件从一个位置复制到另一个位置：
 
@@ -1346,7 +1368,8 @@ uint8_t bodyByte = 0; // 临时处理字节
 int bitCount = 0;  // 记录当前 bodyByte 中已经填充了多少位
 
 for (auto bit : vec) {
-    bodyByte = (bodyByte << 1) | bit;  // 左移，加入一位
+    bodyByte = (bodyByte << 1) | bit;  // 左移，加入一位(顺序存储)
+    bodyByte = bodyByte  | (bit << bitCount);  // 左移，加入一位(逆序存储 或者 顺序存储+下面逆置函数)
     bitCount++;
 
     if (bitCount == 8) {  // 检查是否已填满 8 位
@@ -1434,6 +1457,30 @@ uint8_t highByte = static_cast<uint8_t>(value >> 8 & 0xFF);
      00000000 00110001  // Result: only the low 8 bits are preserved
 
 ```
+
+### 8.3.4 指定位取反
+
+异或：位相同为0，不同为1
+
+```cpp
+#include <iostream>
+#include <cstdint>  // for uint8_t
+
+uint8_t flip_bit(uint8_t num, int n) {
+    // 生成只在第 n 位为 1 的掩码
+    uint8_t mask = 1 << n;
+    
+    // 按位异或，将第 n 位取反
+    num ^= mask;
+    
+    return num;
+}
+
+```
+
+
+
+
 
 ## 3.3 打印16进制
 
