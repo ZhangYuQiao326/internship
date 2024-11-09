@@ -8,7 +8,7 @@ QT下载网址：[Index of /new_archive/qt](https://download.qt.io/new_archive/q
 
 qt账号 zhangyuqiao26@gmail.com   Vw3G7@K,zZYjq7g
 
-zhangyuqaio26@outlook.com Zyq0326.
+zhangyuqiao26@outlook.com Zyq0326.
 
 QT 5.14.2 版本  【阿里网盘】
 
@@ -3333,6 +3333,8 @@ int main()
 [安装说明](https://github.com/ZhangYuQiao326/internship/blob/main/file/QT/qt5.15.2%E5%AE%89%E8%A3%85.html)
 
 [安装包](百度网盘/me/计算机/qt/5.15.2安装)
+
+账号密码zhangyuqiao26@outlook.com Zyq0326.
 
 ## 打开Visual Studio 2022
 
