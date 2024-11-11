@@ -810,6 +810,7 @@ public:
     }
 
 private slots:
+    // 槽函数：获取所在行
     void onComboBoxChanged(int index) {
         // 获取发送信号的ComboBox
         QComboBox *comboBox = qobject_cast<QComboBox*>(sender());
@@ -829,6 +830,25 @@ private slots:
             }
         }
     }
+    // 槽函数：获取所属的表格
+    void onComboBoxIndexChanged(int index) {
+        // 5. 获取触发信号的对象
+        QComboBox *comboBox = qobject_cast<QComboBox *>(sender());
+        if (comboBox) {
+            // 6. 获取表格 widget
+            QTableWidget *tableWidget = qobject_cast<QTableWidget *>(comboBox->parentWidget());
+            if (tableWidget) {
+                // 7. 遍历表格的所有单元格，找到该 QComboBox 所在的单元格位置
+                for (int row = 0; row < tableWidget->rowCount(); ++row) {
+                    for (int col = 0; col < tableWidget->columnCount(); ++col) {
+                        if (tableWidget->cellWidget(row, col) == comboBox) {
+                            qDebug() << "ComboBox is in cell:" << row << col;
+                            return;
+                        }
+                    }
+                }
+            }
+        }
 
 private:
     QTableWidget *tableWidget;
@@ -3113,7 +3133,7 @@ int main(int argc, char *argv[])
 * 常量字符串 == c字符串
 
   ```cpp
-  QString strq = QString::fromLocal8Bit("我的爱人！"); // 先转为c字符串 
+  QString strq = QString::fromLocal8Bit("我的！"); // 先转为c字符串 
   ```
 
 * string <-> int <-> QString
