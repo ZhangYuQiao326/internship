@@ -1482,7 +1482,7 @@ uint8_t flip_bit(uint8_t num, int n) {
 
 
 
-## 3.3 打印16进制
+## 8.3 打印16进制
 
 ```cpp
 #include <iostream>
@@ -1519,3 +1519,70 @@ int main() {
 `static_cast<int>(i)`：将 `i` 强制转换为 `int` 类型。这是因为 `uint8_t` 实际上是一个 `unsigned char`，直接输出时会被解释为字符。转换为 `int` 后，输出其整数值。
 
 `" "`：在每个十六进制数之间添加一个空格
+
+
+
+# 九 按结构体封装协议
+
+```cpp
+struct ZPW2000HostDataFrame
+{
+    uint8_t protocolVersion;
+    uint16_t len;
+    uint8_t sendSeq;
+    uint8_t ackSeq;
+    uint8_t type;
+    uint8_t linkType;
+    uint8_t reverse;
+    int32_t time;
+    char data[];    // 灵活数组 不计sizeof,不需要提前固定大小，使用时候分配 
+};
+void ZPW2000HostEmulatorForm::encapsulateDataProtocal()
+{
+    if (m_alarmCache.empty()) return;
+
+	const uint32_t bufferLen = sizeof(ZPW2000HostDataFrame) + 7; // 使用时候分配
+	char* databuffer = std::make_shared<char[]>(bufferLen).get();
+    ZPW2000HostDataFrame* dataFrame = (ZPW2000HostDataFrame*)databuffer;
+
+	auto sendSeq = m_sendSeq++;
+	if (sendSeq > 240)
+	{
+		sendSeq = 1;
+		m_sendSeq = 1;
+	}
+
+	dataFrame->protocolVersion = 0x20;
+	dataFrame->len = 0x13; 
+	dataFrame->sendSeq = sendSeq;
+	dataFrame->ackSeq = m_ackSeq;
+	dataFrame->type = 0x21;
+	dataFrame->linkType = 0x10;
+    dataFrame->reverse = 0x00;
+	dataFrame->time = (int32_t)time(0);
+	
+    // 数据区内容+ 结束符
+    m_sendBytes.clear();
+	for (auto [lineIndex, alarmdata] : m_alarmCache)
+	{
+        std::vector<uint8_t> tmp (7, 0);
+        tmp[0] = alarmdata.seq;
+        tmp[1] = alarmdata.alarmType;
+        tmp[2] = alarmdata.level;
+
+        tmp[3] = 0x43;
+        tmp[4] = 0x52;
+        tmp[5] = 0x53;
+        tmp[6] = 0x43;
+        memcpy(dataFrame->data , tmp.data(), tmp.size()); // 用memcpy拷贝
+
+        // send
+        QByteArray byteData(databuffer, sizeof(ZPW2000HostDataFrame) + tmp.size());
+        m_sendBytes.push_back(byteData);
+	}
+    return;
+}
+```
+
+
+

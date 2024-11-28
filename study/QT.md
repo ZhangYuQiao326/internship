@@ -3348,6 +3348,30 @@ other.show()
 
 ## 12 通信
 
+### 0 数据格式转换
+
+```cpp
+// vector<uint8_t>  ->  QByteArray
+QByteArray packet(reinterpret_cast<const char*>(vecPacket.data()), vecPacket.size());
+
+// QByteArray -> vector<uint8_t> 
+QByteArray byteArray;
+std::vector<uint8_t> vec(byteArray.begin(), byteArray.end());
+```
+
+```cpp
+// QByteArray -> char*
+char *nonConstCharPtr = byteArray.data();
+const char *nonConstCharPtr = byteArray.constData();
+
+// char* -> QByteArray 
+char* charptr;
+QByteArray byteArray1(charPtr);  // char* 以 \0 结尾
+QByteArray byteArray2(charPtr, 5);  // 只取前 5 个字符， 用于char* 未指定以\0结尾
+```
+
+
+
 ### 1. 串口
 
 ```cmake
@@ -3428,7 +3452,148 @@ serialPort.close();
 
 ```
 
-### 2. UDP
+### 2 网络
+
+下面是一个总结了在 Qt 中使用 **UDP** 和 **TCP** 作为客户端和服务器时常用的接口的表格。这个表格包括了客户端和服务器常用的方法、信号、槽函数及其描述，方便理解每种协议下的操作。
+
+| **功能/操作**            | **UDP 客户端 (`QUdpSocket`)**                  | **UDP 服务器 (`QUdpSocket`)**                  | **TCP 客户端 (`QTcpSocket`)**            | **TCP 服务器 (`QTcpServer`)**              |
+| ------------------------ | ---------------------------------------------- | ---------------------------------------------- | ---------------------------------------- | ------------------------------------------ |
+| **创建 Socket**          | `QUdpSocket *socket = new QUdpSocket();`       | `QUdpSocket *socket = new QUdpSocket();`       | `QTcpSocket *socket = new QTcpSocket();` | `QTcpServer *server = new QTcpServer();`   |
+| **绑定端口**             | `socket->bind(QHostAddress::Any, port);`       | `socket->bind(QHostAddress::Any, port);`       | 无需显式绑定，`listen()` 会自动绑定      | `server->listen(QHostAddress::Any, port);` |
+| **发送数据**             | `socket->writeDatagram(data, address, port);`  | `socket->writeDatagram(data, address, port);`  | `socket->write(data);`                   | `clientSocket->write(data);`               |
+| **接收数据**             | `socket->readDatagram(data, &address, &port);` | `socket->readDatagram(data, &address, &port);` | `socket->readAll();`                     | `clientSocket->readAll();`                 |
+| **连接到服务器**         | 无（UDP 不需要建立连接）                       | 无（UDP 不需要建立连接）                       | `socket->connectToHost(address, port);`  | 无需调用连接，服务器主动接收连接           |
+| **监听端口**             | 无（UDP 是无连接的）                           | 无（UDP 是无连接的）                           | 无需监听，客户端直接连接服务器           | `server->listen(QHostAddress::Any, port);` |
+| **客户端断开连接**       | 无（UDP 不保持连接）                           | 无（UDP 不保持连接）                           | `socket->disconnectFromHost();`          | `clientSocket->disconnectFromHost();`      |
+| **服务器接收连接**       | 无（UDP 不需要接收连接）                       | 无（UDP 不需要接收连接）                       | 无（客户端主动连接）                     | `QTcpServer::newConnection()` 信号触发     |
+| **服务器处理客户端请求** | 无（UDP 不需要处理请求）                       | 无（UDP 不需要处理请求）                       | 通过 `readyRead` 信号处理数据            | 通过 `readyRead` 信号处理数据              |
+| **服务器响应客户端数据** | `socket->writeDatagram(data, address, port);`  | `socket->writeDatagram(data, address, port);`  | `socket->write(data);`                   | `clientSocket->write(data);`               |
+| **关闭 Socket**          | `socket->close();`                             | `socket->close();`                             | `socket->close();`                       | `clientSocket->close();`                   |
+
+#### 1 TCP
+
+在 Qt 中，`accept()` 是一个 **TCP 服务器** 端的操作，它用于接受一个新连接。当你使用 `QTcpServer` 创建一个 TCP 服务器时，当有客户端请求连接时，服务器会通过 `newConnection()` 信号通知你。接着，你可以通过 `QTcpServer::nextPendingConnection()` 方法来接受这个连接，并获取一个 `QTcpSocket` 对象来与客户端通信。
+
+在 Qt 中，`QTcpServer` 本身并没有提供一个直接的 `accept()` 方法，而是通过 `nextPendingConnection()` 来接受客户端连接。当 `newConnection()` 信号触发时，调用 `nextPendingConnection()` 方法可以返回一个待处理的 `QTcpSocket`，这实际上等同于接受了这个客户端连接。
+
+1. **服务器监听端口**：通过 `QTcpServer::listen()` 方法，服务器开始监听客户端的连接请求。
+2. **客户端连接请求**：客户端通过 `QTcpSocket::connectToHost()` 发起连接。
+3. **触发 `newConnection` 信号**：当客户端成功连接时，`QTcpServer` 会发出 `newConnection()` 信号。
+4. **调用 `nextPendingConnection()` 接受连接**：服务器通过调用 `QTcpServer::nextPendingConnection()` 方法来获取一个与客户端连接的 `QTcpSocket` 实例，从而实现接受连接。
+
+```cmake
+# 查找 Qt 包，包括 网络 模块
+find_package(Qt5 COMPONENTS Widgets Network REQUIRED)
+
+# 链接 Qt 库
+target_link_libraries(SerialPortExample PRIVATE Qt5::Widgets Qt5::Network)
+```
+
+* server - 接收单个client
+
+```cpp
+#include <QTcpServer>
+#include <QTcpSocket>
+#include <QCoreApplication>
+
+ QTcpServer* m_server;
+ QTcpSocket* m_clientSocket; // 连接socket
+
+bool startServer()
+{
+    m_server = new QTcpServer();
+	
+    // 绑定处理新连接
+    connect(m_server, &QTcpServer::newConnection, this, &ZPW::onNewConnection);
+	
+    // 监听端口
+    if (!m_server->listen(QHostAddress::Any, 6868))
+    {
+		qDebug() << "Server failed to start:" << m_server->errorString();
+		return false;
+    }
+    return true;
+
+}
+
+private slots:
+void ZPW::onNewConnection()
+{
+    // get new connection
+    m_clientSocket = m_server->nextPendingConnection();
+
+    // 绑定异步接收数据，handle函数
+    connect(m_clientSocket, &QTcpSocket::readyRead, this, &ZPW2000HostEmulatorForm::onHandleReadData);
+}
+
+// handleMessage
+void ZPW::onHandleReadData()
+{
+    std::cout << "receive data";
+	std::cout << "receive data";
+	std::cout << "receive data";
+
+}
+```
+
+* server - 多个client
+
+```cpp
+QTcpServer* m_server;
+QList<QTcpSocket*> m_clientSocketLists; // 保存客户端信息
+
+bool ZPW::startServer()
+{
+    m_server = new QTcpServer();
+
+    connect(m_server, &QTcpServer::newConnection, this, &ZPW2000HostEmulatorForm::onNewConnection);
+
+    if (!m_server->listen(QHostAddress::Any, 6868))
+    {
+		qDebug() << "Server failed to start:" << m_server->errorString();
+		return false;
+    }
+    return true;
+}
+
+void ZPW::onNewConnection()
+{
+    // get new connection
+    QTcpSocket* clientSocket = m_server->nextPendingConnection();
+    if (!clientSocket) return;
+
+    // 处理数据 、断开连接
+    connect(clientSocket, &QTcpSocket::readyRead, this, &ZPW2000HostEmulatorForm::onHandleReadData);
+    connect(clientSocket, &QTcpSocket::disconnected, this, &ZPW2000HostEmulatorForm::onClientDisconnected);
+}
+
+void ZPW2000HostEmulatorForm::onHandleReadData()
+{
+    // 获取具体的socket
+    QTcpSocket* clientSocket = qobject_cast<QTcpSocket*>(sender());
+    if (!clientSocket) return;
+
+    // read data
+    // QByteArray data = clientSocket->readAll();
+
+    // ... 根据不同的
+    sendDataProtocal(clientSocket);
+}
+
+// 断开连接
+void ZPW2000HostEmulatorForm::onClientDisconnected()
+{
+	QTcpSocket* clientSocket = qobject_cast<QTcpSocket*>(sender());
+	if (!clientSocket) return;
+
+	m_clientSocketLists.removeAll(clientSocket);
+	clientSocket->deleteLater();
+}
+```
+
+
+
+#### 2. UDP
 
 ```cmake
 # 查找 Qt 包，包括 网络 模块
@@ -3454,7 +3619,7 @@ public:
         // 绑定到本地端口
         udpSocket->bind(QHostAddress::Any, port);
         
-        // 连接信号
+        // 连接异步读信号
         connect(udpSocket, &QUdpSocket::readyRead, this, &MyUdpApp::onReadyRead);
     }
 
@@ -3499,8 +3664,6 @@ int main(int argc, char *argv[]) {
     return a.exec();
 }
 ```
-
-
 
 ## 13 时间类
 

@@ -1,3 +1,25 @@
+# 环境搭建
+
+1. 拷贝目录文件到服务器
+2. conda 创建虚拟环境，要求python = 3.9以上
+
+```shell
+conda create -n py39_env python=3.9 -y
+```
+
+3. 环境进入yolo8根目录，安装依赖
+
+```shell
+pip install ultralytics
+conda activate py39_env
+```
+
+4. 
+
+
+
+
+
 # 一 目录结构
 
 ## 1.0 参考博客
